@@ -3,6 +3,11 @@
 Apache Pig utilities to build training corpora for machine learning /
 NLP out of public Wikipedia and DBpedia dumps.
 
+## Fork:
+
+This fork attempts to add some functionalities:
+  * Generating statistics from Wikipedia that can be used in Named Entity Recognition and Named Entity Disambiguation.
+
 ## Project status
 
 This project is alpha / experimental code. Features are implemented when needed.
