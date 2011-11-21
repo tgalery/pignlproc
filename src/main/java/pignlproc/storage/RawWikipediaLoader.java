@@ -56,11 +56,12 @@ public class RawWikipediaLoader extends LoadFunc {
             }
 
             String title = reader.getCurrentKey().toString();
+            String id = reader.getWikipediaId().toString();
             String rawMarkup = reader.getCurrentValue().toString();
             String uri = AnnotatingMarkupParser.titleToUri(title, languageCode);
 
             return tupleFactory.newTupleNoCopy(Arrays.asList(new DataByteArray(
-                    title), new DataByteArray(uri),
+                    title), new DataByteArray(id), new DataByteArray(uri),
                     new DataByteArray(rawMarkup)));
         } catch (InterruptedException e) {
             throw new IOException(e);

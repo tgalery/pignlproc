@@ -34,6 +34,10 @@ public class WikipediaPageInputFormat extends FileInputFormat<Text, Text> {
 
         public static final byte[] END_TITLE_MARKER = "</title>".getBytes(UTF8);
 
+        public static final byte[] START_ID_MARKER = "<id>".getBytes(UTF8);
+
+        public static final byte[] END_ID_MARKER = "</id>".getBytes(UTF8);
+
         public static final byte[] START_TEXT_MARKER = "<text xml:space=\"preserve\">".getBytes(UTF8);
 
         public static final byte[] END_TEXT_MARKER = "</text>".getBytes(UTF8);
@@ -46,9 +50,11 @@ public class WikipediaPageInputFormat extends FileInputFormat<Text, Text> {
 
         private final DataOutputBuffer buffer = new DataOutputBuffer();
 
-        private Text currentKey;
+        private Text currentKey = new Text();
 
-        private Text currentValue;
+        private Text currentValue = new Text();
+
+        private Text currentId = new Text();
 
         public WikipediaRecordReader(FileSplit split, TaskAttemptContext context)
                 throws IOException {
@@ -72,26 +78,33 @@ public class WikipediaPageInputFormat extends FileInputFormat<Text, Text> {
             fsin.seek(0);
         }
 
-        protected boolean next(Text key, Text value) throws IOException {
+        protected boolean next(Text key, Text value, Text id) throws IOException {
             if (fsin.getPos() < end) {
                 try {
                     if (readUntilMatch(START_TITLE_MARKER, false)) {
                         if (readUntilMatch(END_TITLE_MARKER, true)) {
-                            int stop = buffer.getLength()
-                                    - END_TITLE_MARKER.length;
+                            int stop = buffer.getLength() - END_TITLE_MARKER.length;
                             key.set(buffer.getData(), 0, stop);
                             buffer.reset();
-                            if (readUntilMatch(START_TEXT_MARKER, false)) {
-                                if (readUntilMatch(END_TEXT_MARKER, true)) {
-                                    // un-escape the XML entities encoding and
-                                    // re-encode the result as raw UTF8 bytes
-                                    stop = buffer.getLength()
-                                            - END_TITLE_MARKER.length;
-                                    String xmlEscapedContent = new String(
-                                            buffer.getData(), 0, stop + 1, UTF8);
-                                    value.set(StringEscapeUtils.unescapeXml(
-                                            xmlEscapedContent).getBytes(UTF8));
-                                    return true;
+                            if (readUntilMatch(START_ID_MARKER, false)) {
+                                if (readUntilMatch(END_ID_MARKER, true)) {
+                                    stop = buffer.getLength() - END_ID_MARKER.length;
+                                    id.set(buffer.getData(), 0, stop);
+                                    System.err.println(id);
+                                    buffer.reset();
+                                    if (readUntilMatch(START_TEXT_MARKER, false)) {
+                                        if (readUntilMatch(END_TEXT_MARKER, true)) {
+                                            // un-escape the XML entities encoding and
+                                            // re-encode the result as raw UTF8 bytes
+                                            stop = buffer.getLength()
+                                                    - END_TITLE_MARKER.length;
+                                            String xmlEscapedContent = new String(
+                                                    buffer.getData(), 0, stop + 1, UTF8);
+                                            value.set(StringEscapeUtils.unescapeXml(
+                                                    xmlEscapedContent).getBytes(UTF8));
+                                            return true;
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -163,6 +176,10 @@ public class WikipediaPageInputFormat extends FileInputFormat<Text, Text> {
             return currentValue;
         }
 
+        public Text getWikipediaId() throws IOException, InterruptedException {
+            return currentId;
+        }
+
         @Override
         public void initialize(InputSplit split, TaskAttemptContext context)
                 throws IOException, InterruptedException {
@@ -170,9 +187,10 @@ public class WikipediaPageInputFormat extends FileInputFormat<Text, Text> {
 
         @Override
         public boolean nextKeyValue() throws IOException, InterruptedException {
-            currentKey = new Text();
-            currentValue = new Text();
-            return next(currentKey, currentValue);
+            currentKey.clear();
+            currentValue.clear();
+            currentId.clear();
+            return next(currentKey, currentValue, currentId);
         }
     }
 

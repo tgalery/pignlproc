@@ -47,7 +47,7 @@ public class TestWikipediaLoader {
         filename = filename.replace("\\", "\\\\");
         String query = "A = LOAD 'file:" + filename
                 + "' USING pignlproc.storage.ParsingWikipediaLoader('en')"
-                + " as (title: chararray, uri: chararray, text: chararray,"
+                + " as (title: chararray, id: chararray, uri: chararray, text: chararray,"
                 + " redirect: chararray, links, headers, paragraphs);";
         pig.registerQuery(query);
         Iterator<Tuple> it = pig.openIterator("A");

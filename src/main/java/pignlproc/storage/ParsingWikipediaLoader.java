@@ -37,6 +37,7 @@ public class ParsingWikipediaLoader extends RawWikipediaLoader implements
                 return null;
             }
             String title = reader.getCurrentKey().toString();
+            String id = reader.getWikipediaId().toString();
             String uri = AnnotatingMarkupParser.titleToUri(title, languageCode);
             String rawMarkup = reader.getCurrentValue().toString();
 
@@ -59,7 +60,7 @@ public class ParsingWikipediaLoader extends RawWikipediaLoader implements
                 paragraphs.add(tupleFactory.newTupleNoCopy(Arrays.asList(
                         p.value, p.begin, p.end)));
             }
-            return tupleFactory.newTupleNoCopy(Arrays.asList(title, uri, text,
+            return tupleFactory.newTupleNoCopy(Arrays.asList(title, id, uri, text,
                     redirect, links, headers, paragraphs));
         } catch (InterruptedException e) {
             throw new IOException(e);
@@ -71,6 +72,7 @@ public class ParsingWikipediaLoader extends RawWikipediaLoader implements
             throws IOException {
         Schema schema = new Schema();
         schema.add(new FieldSchema("title", DataType.CHARARRAY));
+        schema.add(new FieldSchema("id", DataType.CHARARRAY));
         schema.add(new FieldSchema("uri", DataType.CHARARRAY));
         schema.add(new FieldSchema("text", DataType.CHARARRAY));
         schema.add(new FieldSchema("redirect", DataType.CHARARRAY));
