@@ -7,7 +7,7 @@ REGISTER $PIGNLPROC_JAR
 parsed =
   LOAD '$INPUT'
   USING pignlproc.storage.ParsingWikipediaLoader('$LANG')
-  AS (title, uri, text, redirect, links, headers, paragraphs);
+  AS (title, id, uri, text, redirect, links, headers, paragraphs);
 
 -- Extract the sentence contexts of the links respecting the paragraph
 -- boundaries
