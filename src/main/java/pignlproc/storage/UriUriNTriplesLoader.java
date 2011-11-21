@@ -13,7 +13,7 @@ import org.apache.pig.impl.logicalLayer.schema.Schema.FieldSchema;
 /**
  * Pig loader for NTriples formatted RDF files assuming that subject, predicate
  * and object are all valid URIs (e.g. clear of any whitespace character).
- * 
+ *
  * Returns the subject and the object. The property value can be given as a
  * filter.
  */
@@ -23,12 +23,17 @@ public class UriUriNTriplesLoader extends AbstractNTriplesLoader {
         this(null, null, null);
     }
 
+    // compatibility with Pig version < 0.9
+    public UriUriNTriplesLoader(String propertyUri) {
+        this(propertyUri, null, null);
+    }
+
     public UriUriNTriplesLoader(String propertyUri, String subjectNamespace,
-	    String objectNamespace) {
-	super();
-	this.propertyUri = propertyUri;
-	this.subjectNamespace = subjectNamespace;
-	this.objectNamespace = objectNamespace;
+	          String objectNamespace) {
+        super();
+        this.propertyUri = propertyUri;
+        this.subjectNamespace = subjectNamespace;
+        this.objectNamespace = objectNamespace;
     }
 
     @Override
