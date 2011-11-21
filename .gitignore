@@ -8,5 +8,6 @@ bin
 *.swp
 *~
 *.iml
+*.pig.params
 run.sh
 workspace
