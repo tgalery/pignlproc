@@ -14,7 +14,7 @@ DEFINE extract_sentences pignlproc.evaluation.SentencesWithLink();
 
 parsed = LOAD '$INPUT'
   USING pignlproc.storage.ParsingWikipediaLoader('$LANG')
-  AS (title, wikiuri, text, redirect, links, headers, paragraphs);
+  AS (title, id, wikiuri, text, redirect, links, headers, paragraphs);
 
 -- filter and project as early as possible
 noredirect = FILTER parsed by redirect IS NULL;
