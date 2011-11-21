@@ -6,7 +6,7 @@ REGISTER $PIGNLPROC_JAR
 -- Parse the wikipedia dump and extract text and links data
 parsed =
   LOAD '$INPUT'
-  USING pignlproc.storage.ParsingWikipediaLoader('en')
+  USING pignlproc.storage.ParsingWikipediaLoader('$LANG')
   AS (title, uri, text, redirect, links, headers, paragraphs);
 
 -- Extract the sentence contexts of the links respecting the paragraph
