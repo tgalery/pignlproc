@@ -93,7 +93,7 @@ pageLinks = FOREACH sentences GENERATE
 
 -- Filter out surfaceForms that have zero or one character
 pageLinksNonEmptySf = FILTER pageLinks 
-  BY SIZE(surfaceForm) >= $MINUMUM_SURFACE_FORM_LENGTH;
+  BY SIZE(surfaceForm) >= $MIN_SURFACE_FORM_LENGTH;
 
 -- Resolve redirects
 pageLinksRedirectsJoin = JOIN
