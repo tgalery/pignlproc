@@ -37,6 +37,7 @@ import java.util.List;
 
 import org.apache.pig.EvalFunc;
 import org.apache.pig.FuncSpec;
+import org.apache.pig.data.BagFactory;
 import org.apache.pig.data.DataBag;
 import org.apache.pig.data.DataType;
 import org.apache.pig.data.DefaultBagFactory;
@@ -59,6 +60,9 @@ public class NGramGenerator extends EvalFunc<DataBag> {
 
     private final Tokenizer tokenizer = SimpleTokenizer.INSTANCE;
 
+    private final BagFactory bagFactory = DefaultBagFactory.getInstance();
+    private final TupleFactory tupleFactory = TupleFactory.getInstance();
+
     public NGramGenerator(int ngramSizeLimit) {
         this.ngramSizeLimit = ngramSizeLimit;
     }
@@ -72,7 +76,7 @@ public class NGramGenerator extends EvalFunc<DataBag> {
     public DataBag exec(Tuple input) throws IOException {
         String text = (String)input.get(0);
         String[] words = tokenizer.tokenize(text);
-        DataBag output = DefaultBagFactory.getInstance().newDefaultBag();
+        DataBag output = bagFactory.newDefaultBag();
         fillOutputWithNgrams(words, output, this.ngramSizeLimit);
         return output;
     }
@@ -111,8 +115,9 @@ public class NGramGenerator extends EvalFunc<DataBag> {
                 }
             }
             sb.deleteCharAt(sb.length() - 1);  // delete last space
+
             String ngram = sb.toString();
-            Tuple tuple = TupleFactory.getInstance().newTuple(ngram);
+            Tuple tuple = tupleFactory.newTuple(ngram);
             output.add(tuple);
         }
         if (size > 1) {
