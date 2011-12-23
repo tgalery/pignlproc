@@ -2,7 +2,6 @@ package pignlproc.helpers;
 
 import java.io.IOException;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -20,14 +19,12 @@ public class TestNGramGenerator {
         NGramGenerator generator = new NGramGenerator(ngramLength);
         Tuple inputTuple = tupleFactory.newTuple(testString);
         DataBag resultBag = generator.exec(inputTuple);
-        Iterator<Tuple> it = resultBag.iterator();
-        while (it.hasNext()) {
-            Tuple tuple = it.next();
+        for (Tuple tuple : resultBag) {
             String ngram = (String) tuple.get(0);
             Assert.assertTrue("'" + ngram + "' not in corrects: " + correctNgrams, correctNgrams.contains(ngram));
             correctNgrams.remove(ngram);
         }
-        Assert.assertSame(0, correctNgrams.size());
+        Assert.assertSame("left-over corrects, nothing left in output", 0, correctNgrams.size());
     }
 
     @Test
@@ -49,11 +46,28 @@ public class TestNGramGenerator {
         test(testString, correctNgrams, 3);
     }
 
-    //@Test
+    @Test
     public void medium() throws IOException {
         String testString = "That's a little harder.";
         Set<String> correctNgrams = new HashSet<String>();
-
+        correctNgrams.add("That's");
+        correctNgrams.add("'s a");
+        correctNgrams.add("s a little");
+        correctNgrams.add("a little harder");
+        correctNgrams.add("little harder.");
+        correctNgrams.add("That'");
+        correctNgrams.add("'s");
+        correctNgrams.add("s a");
+        correctNgrams.add("a little");
+        correctNgrams.add("little harder");
+        correctNgrams.add("harder.");
+        correctNgrams.add("That");
+        correctNgrams.add("'");
+        correctNgrams.add("s");
+        correctNgrams.add("a");
+        correctNgrams.add("little");
+        correctNgrams.add("harder");
+        correctNgrams.add(".");
         test(testString, correctNgrams, 3);
     }
 

@@ -19,17 +19,13 @@ package pignlproc.helpers;
  */
 
 /**
- * This class is a modified version of the one in the Pig Tutorial:
+ * This class inspired by a class from the Pig Tutorial:
  * https://cwiki.apache.org/confluence/display/PIG/PigTutorial
- *
- * It uses a different tokenizer than the original. It also contains
- * a the makeNGram function that is in another class in the tutorial.
- * Finally, it does not make a set of ngrams, but returns all of them
- * including duplicates.
  */
 
 import opennlp.tools.tokenize.SimpleTokenizer;
 import opennlp.tools.tokenize.Tokenizer;
+import opennlp.tools.util.Span;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -75,53 +71,29 @@ public class NGramGenerator extends EvalFunc<DataBag> {
     @Override
     public DataBag exec(Tuple input) throws IOException {
         String text = (String)input.get(0);
-        String[] words = tokenizer.tokenize(text);
+        Span[] spans = tokenizer.tokenizePos(text);
         DataBag output = bagFactory.newDefaultBag();
-        fillOutputWithNgrams(words, output, this.ngramSizeLimit);
+        fillOutputWithNgrams(spans, text, output, this.ngramSizeLimit);
         return output;
     }
 
     /**
-     * This is a simple utility function that make word-level
-     * ngrams from a set of words
-     * @param words tokenized phrase
+     * This is a simple utility function that make word-level ngrams from a set of words.
+     * @param spans spans of tokens in the text
+     * @param text the original text
      * @param output result bag of ngram strings
      * @param size number of words in an ngram (in this recursive call)
      */
-    private void fillOutputWithNgrams(String[] words, DataBag output, int size) {
-        int stop = words.length - size + 1;
-        for (int i = 0; i < stop; i++) {
-            StringBuilder sb = new StringBuilder();
-            int localSize = size;
-            for (int j = 0; j < localSize; j++) {
-                int pos = i + j;
-                if (pos >= words.length) {
-                    break;
-                }
-                String w = words[pos];
-                sb.append(w);
-
-                // HACK: we do not want to tokenize at '-'
-                //TODO think about using another Tokenizer!
-                if (w.equals("-")) {
-                    int preSpace = sb.length() - 2;
-                    if (preSpace >= 0) {
-                        sb.deleteCharAt(preSpace);
-                        localSize++;
-                    }
-                }
-                else {
-                    sb.append(' ');
-                }
-            }
-            sb.deleteCharAt(sb.length() - 1);  // delete last space
-
-            String ngram = sb.toString();
+    private void fillOutputWithNgrams(Span[] spans, String text, DataBag output, int size) {
+        int stop = spans.length - size + 1;
+        for (int startIdx = 0; startIdx < stop; startIdx++) {
+            int endIdx = startIdx + size - 1;
+            String ngram = text.substring(spans[startIdx].getStart(), spans[endIdx].getEnd());
             Tuple tuple = tupleFactory.newTuple(ngram);
             output.add(tuple);
         }
         if (size > 1) {
-            fillOutputWithNgrams(words, output, size - 1);
+            fillOutputWithNgrams(spans, text, output, size - 1);
         }
     }
 
