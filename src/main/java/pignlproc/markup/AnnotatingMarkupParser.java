@@ -16,6 +16,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -58,7 +59,7 @@ public class AnnotatingMarkupParser implements ITextConverter {
 
     protected final List<Annotation> paragraphs = new ArrayList<Annotation>();
 
-    protected String languageCode = "en";
+    protected String languageCode;
 
     protected final WikiModel model;
 
@@ -66,14 +67,23 @@ public class AnnotatingMarkupParser implements ITextConverter {
 
     protected String text;
 
-    protected static final Pattern REDIRECT_PATTERN = Pattern.compile("^#REDIRECT \\[\\[([^\\]]*)\\]\\]");
+    protected static final Map<String, Pattern> REDIRECT_PATTERNS = getRedirectPatterns();
+    protected Pattern redirectPattern;
+
+    private static Map<String, Pattern> getRedirectPatterns() {
+        Map<String, Pattern> m = new HashMap<String, Pattern>();
+        m.put("en", Pattern.compile("^#REDIRECT \\[\\[([^\\]]*)\\]\\]"));
+        m.put("de", Pattern.compile("^#WEITERLEITUNG \\[\\[([^\\]]*)\\]\\]"));
+        return m;
+    }
 
     public AnnotatingMarkupParser() {
-        model = makeWikiModel(languageCode);
+        this("en");
     }
 
     public AnnotatingMarkupParser(String languageCode) {
         this.languageCode = languageCode;
+        redirectPattern = REDIRECT_PATTERNS.get(languageCode);
         model = makeWikiModel(languageCode);
     }
 
@@ -86,7 +96,7 @@ public class AnnotatingMarkupParser implements ITextConverter {
             public String getRawWikiContent(String namespace,
                     String articleName, Map<String, String> templateParameters) {
                 // disable template support
-                // TODO: we need to readd template support at least for dates
+                // TODO: we need to read template support at least for dates
                 return "";
             }
         };
@@ -101,7 +111,7 @@ public class AnnotatingMarkupParser implements ITextConverter {
      * @return the simple text without the markup
      */
     public String parse(String rawWikiMarkup) {
-        Matcher matcher = REDIRECT_PATTERN.matcher(rawWikiMarkup);
+        Matcher matcher = redirectPattern.matcher(rawWikiMarkup);
         if (matcher.find()) {
             redirect = titleToUri(matcher.group(1), languageCode);
         } else {
