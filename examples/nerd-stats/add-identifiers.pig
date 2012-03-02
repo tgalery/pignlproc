@@ -8,7 +8,7 @@ wikiNerdStats = LOAD '$WIKI_NERD_STATS'
 
 -- Join
 wikiNerdStatsJoin = JOIN
-  customWikiMapping BY wikiId_custom,
+  customWikiMapping BY wikiId_custom RIGHT,
   wikiNerdStats BY wikiId_nerdStats;
 
 -- Create Wikipedia-NERD-Stats with Custom-URIs
