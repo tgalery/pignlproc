@@ -14,6 +14,8 @@ TODO think about efficiency:
  - Pig 0.9 supports macros. They could help make the script more readable (esp. redirect resolution)
 */
 
+SET job.name 'Wikipedia-NERD-Stats for $LANG'
+
 -- Register the project jar to use the custom loaders and UDFs
 REGISTER $PIGNLPROC_JAR
 
@@ -67,7 +69,7 @@ r2join = JOIN
 
 redirects = FOREACH r2join GENERATE 
   source2a AS redirectSource,
-  flatten(resolve(target2a, target2b)) AS redirectTarget;
+  FLATTEN(resolve(target2a, target2b)) AS redirectTarget;
 
 --FOR DEVELOPMENT ONLY: no transitive closure
 --redirects = FOREACH parsedRedirects GENERATE pageUrl AS redirectSource, redirect AS redirectTarget;
@@ -82,7 +84,7 @@ articles = FOREACH parsedNonRedirects GENERATE
 -- Extract sentence contexts of the links respecting the paragraph boundaries
 sentences = FOREACH articles GENERATE
   pageUrl,
-  flatten(pignlproc.evaluation.SentencesWithLink(text, links, paragraphs))
+  FLATTEN(pignlproc.evaluation.SentencesWithLink(text, links, paragraphs))
   AS (sentenceIdx, sentence, targetUri, startPos, endPos);
 
 -- Project to three important relations
@@ -101,13 +103,13 @@ pageLinksRedirectsJoin = JOIN
   pageLinksNonEmptySf BY uri;
 resolvedLinks = FOREACH pageLinksRedirectsJoin GENERATE
   surfaceForm,
-  flatten(resolve(uri, redirectTarget)) AS uri,
+  FLATTEN(resolve(uri, redirectTarget)) AS uri,
   pageUrl;
 distinctLinks = DISTINCT resolvedLinks;
 
 -- Make Ngrams
 pageNgrams = FOREACH articles GENERATE
-  flatten(ngramGenerator(text)) AS ngram,
+  FLATTEN(ngramGenerator(text)) AS ngram,
   pageUrl;
 
 -- Double links: if surface form is annotated once,
@@ -128,13 +130,13 @@ pairs = FOREACH doubledLinks GENERATE
 -- Count pairs: absolute
 pairGrp = GROUP pairs BY (surfaceForm, uri);
 pairCounts = FOREACH pairGrp GENERATE
-  flatten($0) AS (pairSf, pairUri),
+  FLATTEN($0) AS (pairSf, pairUri),
   COUNT($1) AS pairCount;
 
 -- Count pairs: per page
 distinctPairGrp = GROUP distinctLinks BY (surfaceForm, uri);
 pagePairCounts = FOREACH distinctPairGrp GENERATE
-  flatten($0) AS (pagePairSf, pagePairUri),
+  FLATTEN($0) AS (pagePairSf, pagePairUri),
   COUNT($1) AS pagePairCount;
 
 -- Count surface forms
@@ -234,7 +236,7 @@ nerdStatsTable = FOREACH joinAll4 GENERATE
   joinAll2::joinAll1::probUriGivenSf::sfCounts::surfaceForm,
   ofUri,
   uriOf,
-  flatten(resolve('0', keyphrasenessScore)),
+  FLATTEN(resolve('0', keyphrasenessScore)),
   id,
   uriCount;
 
