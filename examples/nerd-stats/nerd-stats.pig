@@ -14,7 +14,12 @@ TODO think about efficiency:
  - Pig 0.9 supports macros. They could help make the script more readable (esp. redirect resolution)
 */
 
-SET job.name 'Wikipedia-NERD-Stats for $LANG'
+--Chris: commented out for testing
+--SET job.name 'Wikipedia-NERD-Stats for $LANG'
+
+
+
+
 
 -- Register the project jar to use the custom loaders and UDFs
 REGISTER $PIGNLPROC_JAR
@@ -107,7 +112,7 @@ resolvedLinks = FOREACH pageLinksRedirectsJoin GENERATE
   pageUrl;
 distinctLinks = DISTINCT resolvedLinks;
 
--- Make Ngrams
+-- Make Ngrams -- Chris: get all Ngrams (up to $MAX_NGRAM_LENGTH) in Wikipedia
 pageNgrams = FOREACH articles GENERATE
   FLATTEN(ngramGenerator(text)) AS ngram,
   pageUrl;
@@ -151,7 +156,7 @@ uriCounts = FOREACH uriGrp GENERATE
   $0 AS uri,
   COUNT($1) AS uriCount;
 
--- Count Ngrams: absolute
+-- Count Ngrams: absolute --Chris: count all Ngrams in Wikipedia
 ngrams = FOREACH pageNgrams GENERATE
   ngram;
 ngramGrp = GROUP ngrams BY ngram;
@@ -180,6 +185,7 @@ probUriGivenSf = FOREACH sfJoin GENERATE
   (double)pairCount/sfCount AS ofUri,
   pairUri;
 
+
 -- calculate P(sf|uri), a.k.a. "uriOf"
 uriJoin = JOIN
   uriCounts BY uri,
@@ -188,6 +194,7 @@ probSfGivenUri = FOREACH uriJoin GENERATE
   uri,
   (double)pairCount/uriCount AS uriOf,
   pairSf;
+
 
 -- calculate prominence
 -- = uriCounts
@@ -239,6 +246,10 @@ nerdStatsTable = FOREACH joinAll4 GENERATE
   FLATTEN(resolve('0', keyphrasenessScore)),
   id,
   uriCount;
+
+--Chris: TEST--
+DESCRIBE nerdStatsTable;
+--DUMP nerdStatsTable;
 
 -- Store
 STORE nerdStatsTable INTO '$OUTPUT';
