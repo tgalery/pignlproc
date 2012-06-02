@@ -21,7 +21,6 @@ import org.apache.pig.impl.logicalLayer.schema.Schema.FieldSchema;
  /**
  * @author chrishokamp
  * Take a bag of paragraphs (usage contexts) and emit a bag of tuples with (word, count)
- * Each token is counted once for each resource (total term frequency is not counted)
  *
  */
 
