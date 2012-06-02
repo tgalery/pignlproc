@@ -22,14 +22,7 @@ import org.apache.pig.impl.logicalLayer.schema.Schema.FieldSchema;
  * @author chrishokamp
  * Parse the text - for each link emit a tuple with the link and the paragraph in which it occurred
  *
- * *Paragraph location is used to ensure that the sentences do not span paragraph
- * *boundaries.
  *
- * *Sentences are also given a sequential number that can be useful for
- * *reordering purposes.
- *
- * *If a given sentence hold several link, the output bag will include as one
- * *sentence tuple for each link.
  */
 public class ParagraphsWithLink extends EvalFunc<DataBag> {
 

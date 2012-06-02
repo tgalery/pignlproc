@@ -15,10 +15,7 @@ TODO think about efficiency:
 */
 
 --Chris: commented out for testing
---SET job.name 'Wikipedia-NERD-Stats for $LANG'
-
-
-
+SET job.name 'Wikipedia-NERD-Stats for $LANG'
 
 
 -- Register the project jar to use the custom loaders and UDFs
