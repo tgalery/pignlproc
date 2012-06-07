@@ -67,7 +67,8 @@ public class GetCounts extends EvalFunc<DataBag> {
 
         Map <String, Integer> allCounts = new HashMap<String, Integer>();
         // TODO: think about a more efficient way to do this
-
+        // Update 5.6.12: get counts in pig, here, just output one tuple for each token
+        // think about how to modularize the preprocessing
 
         while (it.hasNext())
         {

@@ -1,9 +1,14 @@
 /*
  * Wikipedia Statistics for Named Entity Recognition and Disambiguation
+ *
+ * @params $DIR - the directory where the files should be stored
+ *         $INPUT - the wikipedia XML dump
+ *         $PIGNLPROC_JAR - the location of the pignlproc jar
+ *         $LANG - the language of the Wikidump 
  */
 
 
-SET job.name 'Wikipedia-NERD-Stats for $LANG'
+SET job.name 'Wikipedia-Token-Counts-per-URI for $LANG'
 
 -- Register the project jar to use the custom loaders and UDFs
 REGISTER $PIGNLPROC_JAR
@@ -11,11 +16,6 @@ REGISTER $PIGNLPROC_JAR
 -- Define alias for redirect resolver function
 DEFINE resolve pignlproc.helpers.SecondIfNotNullElseFirst();
 
--- Define alias for ConcatTextBag function -- is this necessary?
---DEFINE aggregate pignlproc.helpers.
-
--- Define Ngram generator with maximum Ngram length
-DEFINE ngramGenerator pignlproc.helpers.NGramGenerator('$MAX_NGRAM_LENGTH');
 
 --------------------
 -- prepare
@@ -92,7 +92,7 @@ counts = FOREACH contextBag GENERATE
 	pignlproc.index.GetCounts($1);
 
 --Now output to .TSV --> Last directory in $dir is hard-coded for now
-STORE counts INTO '$DIR/countTest.TSV' USING PigStorage();
+STORE counts INTO '$DIR/token_counts.TSV' USING PigStorage();
 
 --TEST
 --DUMP counts;
