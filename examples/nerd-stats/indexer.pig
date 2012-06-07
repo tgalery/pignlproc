@@ -16,6 +16,9 @@ REGISTER $PIGNLPROC_JAR
 -- Define alias for redirect resolver function
 DEFINE resolve pignlproc.helpers.SecondIfNotNullElseFirst();
 
+-- Define alias for tokenizer function
+DEFINE tokens pignlproc.index.Tokenizer();
+
 
 --------------------
 -- prepare
@@ -31,38 +34,6 @@ SPLIT parsed INTO
   parsedRedirects IF redirect IS NOT NULL,
   parsedNonRedirects IF redirect IS NULL;
 
--- Wikipedia IDs
-ids = FOREACH parsedNonRedirects GENERATE
-  title,
-  id,
-  pageUrl;
-
--- Load Redirects and build transitive closure
--- (resolve recursively) in 2 iterations
-r1a = FOREACH parsedRedirects GENERATE
-  pageUrl AS source1a,
-  redirect AS target1a;
-r1b = FOREACH r1a GENERATE
-  source1a AS source1b,
-  target1a AS target1b;
-r1join = JOIN
-  r1a BY target1a LEFT,
-  r1b BY source1b;
-
-r2a = FOREACH r1join GENERATE
-  source1a AS source2a,
-  flatten(resolve(target1a, target1b)) AS target2a;
-r2b = FOREACH r2a GENERATE
-  source2a AS source2b,
-  target2a AS target2b;
-r2join = JOIN
-  r2a BY target2a LEFT,
-  r2b BY source2b;
-
-redirects = FOREACH r2join GENERATE 
-  source2a AS redirectSource,
-  FLATTEN(resolve(target2a, target2b)) AS redirectTarget;
-
 
 -- Project articles
 articles = FOREACH parsedNonRedirects GENERATE
@@ -77,24 +48,27 @@ paragraphs = FOREACH articles GENERATE
   FLATTEN(pignlproc.evaluation.ParagraphsWithLink(text, links, paragraphs))
   AS (paragraphIdx, paragraph, targetUri, startPos, endPos);
 
+
+-- Optimisations for distributed processing
+
+--TOKENIZE HERE
 contexts = FOREACH paragraphs GENERATE
-	targetUri, paragraph;
+	targetUri, FLATTEN(tokens(paragraph)) AS word;
 
-byTargetUri = GROUP contexts BY targetUri;
+tokens_by_uri = GROUP contexts by (targetUri, word);
 
-contextBag = FOREACH byTargetUri GENERATE
-	group, contexts.$1;
+uri_token_counts = FOREACH tokens_by_uri GENERATE
+	group.targetUri AS uri, group.word AS token, COUNT(contexts.$0) AS count;
 
+by_uri_all_tokens = GROUP uri_token_counts BY uri;
 
---We use a tokenization and counting UDF here
-counts = FOREACH contextBag GENERATE
-	group,	
-	pignlproc.index.GetCounts($1);
+counts = FOREACH by_uri_all_tokens GENERATE
+	group, uri_token_counts.(token, count); 
 
 --Now output to .TSV --> Last directory in $dir is hard-coded for now
 STORE counts INTO '$DIR/token_counts.TSV' USING PigStorage();
 
 --TEST
 --DUMP counts;
---DESCRIBE counts;
+DESCRIBE counts;
 
