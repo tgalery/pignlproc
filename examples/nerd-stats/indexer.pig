@@ -13,9 +13,6 @@ SET job.name 'Wikipedia-Token-Counts-per-URI for $LANG'
 -- Register the project jar to use the custom loaders and UDFs
 REGISTER $PIGNLPROC_JAR
 
--- Define alias for redirect resolver function
-DEFINE resolve pignlproc.helpers.SecondIfNotNullElseFirst();
-
 -- Define alias for tokenizer function
 DEFINE tokens pignlproc.index.Tokenizer();
 
