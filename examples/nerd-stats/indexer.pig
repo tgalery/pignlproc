@@ -8,6 +8,9 @@
  */
 
 
+-- TEST: set parallelism level for reducers
+SET default_parallel 7;
+
 SET job.name 'Wikipedia-Token-Counts-per-URI for $LANG'
 
 -- Register the project jar to use the custom loaders and UDFs
@@ -25,6 +28,8 @@ DEFINE tokens pignlproc.index.Tokenizer();
 parsed = LOAD '$INPUT'
   USING pignlproc.storage.ParsingWikipediaLoader('$LANG')
   AS (title, id, pageUrl, text, redirect, links, headers, paragraphs);
+
+
 
 -- filter as early as possible
 SPLIT parsed INTO 
@@ -52,10 +57,23 @@ paragraphs = FOREACH articles GENERATE
 contexts = FOREACH paragraphs GENERATE
 	targetUri, FLATTEN(tokens(paragraph)) AS word;
 
-tokens_by_uri = GROUP contexts by (targetUri, word);
+-- testing stopword removal --> this should be a param!
+stopwords = LOAD 'stopwords.en.list' USING PigStorage('\n')
+	AS stopword: chararray;
+
+with_stopwords = JOIN contexts by word LEFT OUTER, stopwords by stopword USING 'replicated';
+
+without_stopwords = FILTER with_stopwords BY stopwords::stopword is  null;
+
+cleaned = FOREACH without_stopwords GENERATE
+	contexts::targetUri as targetUri,
+	contexts::word as word;
+		
+
+tokens_by_uri = GROUP cleaned by (targetUri, word);
 
 uri_token_counts = FOREACH tokens_by_uri GENERATE
-	group.targetUri AS uri, group.word AS token, COUNT(contexts.$0) AS count;
+	group.targetUri AS uri, group.word AS token, COUNT(cleaned.$0) AS count;
 
 by_uri_all_tokens = GROUP uri_token_counts BY uri;
 
@@ -67,5 +85,5 @@ STORE counts INTO '$DIR/token_counts.TSV' USING PigStorage();
 
 --TEST
 --DUMP counts;
-DESCRIBE counts;
+--DESCRIBE counts;
 
