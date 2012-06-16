@@ -32,7 +32,7 @@ import java.io.StringReader;
 public class Lucene_Tokenizer extends EvalFunc<DataBag> {
     TupleFactory tupleFactory = TupleFactory.getInstance();
     BagFactory bagFactory = BagFactory.getInstance();
-    //Hard-coded for the Lucene standard analyzer because this are unnecessary for this implementation
+    //Hard-coded for the Lucene standard analyzer because this is unnecessary for this implementation
     String field = "paragraph";
 
 
@@ -50,10 +50,7 @@ public class Lucene_Tokenizer extends EvalFunc<DataBag> {
                              + t0.getClass().getName());
              }
 
-
-
             TokenStream stream = analyzer.tokenStream(field, new StringReader((String)t0));
-
 
             try {
                 while (stream.incrementToken()) {
