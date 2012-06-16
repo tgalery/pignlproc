@@ -19,7 +19,7 @@ import org.apache.pig.impl.logicalLayer.schema.Schema.FieldSchema;
 /**
  /**
  * @author chrishokamp
- * Take a bag of paragraphs (usage contexts) and emit a bag of tokens
+ * Take a bag of paragraphs (usage contexts) and emit a bag of tokens using the OpenNLP tokenizer
  *
  */
 
