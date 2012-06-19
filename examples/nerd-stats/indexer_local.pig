@@ -59,5 +59,5 @@ tokenized = FOREACH paragraph_bag GENERATE
 	group AS uri, tokens(paragraph) AS tokens;
 
 --Now output to .TSV --> Last directory in $dir is hard-coded for now
-STORE tokenized INTO '$DIR/part_2_token_counts.TSV.bz2' USING PigStorage();
+STORE tokenized INTO '$DIR' USING PigStorage();
 
