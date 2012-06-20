@@ -1,5 +1,12 @@
 /*
  * Wikipedia Statistics for Named Entity Recognition and Disambiguation
+ * 
+ *@params $DIR - the directory where the files should be stored
+ *        $INPUT - the wikipedia XML dump
+ *        $MIN_SURFACE_FORM_LENGTH - the minimum lenth of the surface form in chars (probably 1|2)
+ *        $PIGNLPROC_JAR - the location of the pignlproc jar
+ *        $LANG - the language of the Wikidump
+ *	  
  */
 
 SET job.name 'Wikipedia-Surface Form -> URI sets for $LANG'
@@ -10,13 +17,6 @@ REGISTER $PIGNLPROC_JAR
 -- Define alias for redirect resolver function
 DEFINE resolve pignlproc.helpers.SecondIfNotNullElseFirst();
 
--- Define Ngram generator with maximum Ngram length
---DEFINE ngramGenerator pignlproc.helpers.NGramGenerator('$MAX_NGRAM_LENGTH');
-
---------------------
--- prepare
---------------------
-
 -- Parse the wikipedia dump and extract text and links data
 parsed = LOAD '$INPUT'
   USING pignlproc.storage.ParsingWikipediaLoader('$LANG')
@@ -26,12 +26,6 @@ parsed = LOAD '$INPUT'
 SPLIT parsed INTO 
   parsedRedirects IF redirect IS NOT NULL,
   parsedNonRedirects IF redirect IS NULL;
-
--- Wikipedia IDs
---ids = FOREACH parsedNonRedirects GENERATE
---  title,
---  id,
---  pageUrl;
 
 -- Load Redirects and build transitive closure
 -- (resolve recursively) in 2 iterations -- 
@@ -58,9 +52,6 @@ r2join = JOIN
 redirects = FOREACH r2join GENERATE 
   source2a AS redirectSource,
   FLATTEN(resolve(target2a, target2b)) AS redirectTarget;
-
--- Chris 19.6.12 - working here
--- check what _redirects_ looks like - Answer: redirects: {redirectSource: chararray,redirectTarget: chararray}
 
 -- Project articles
 articles = FOREACH parsedNonRedirects GENERATE
@@ -101,20 +92,6 @@ resolvedLinks = FOREACH pageLinksRedirectsJoin GENERATE
   FLATTEN(resolve(uri, redirectTarget)) AS uri;
 distinctLinks = DISTINCT resolvedLinks;
 
--- Chris: test -- I want to see the source URI
--- Resolve redirects  
---pageLinksRedirectsJoin = JOIN
---  redirects BY redirectSource RIGHT,
---  pageLinksNonEmptySf BY uri;
---resolvedLinks = FOREACH pageLinksRedirectsJoin GENERATE
---  surfaceForm,
---  pageUrl,
---  FLATTEN(resolve(uri, redirectTarget)) AS uri;
---distinctLinks = DISTINCT resolvedLinks;
---DUMP distinctLinks;
---DESCRIBE distinctLinks;
---END TEST
-
 -- we want (sf, {URI, URI, URI,...}, count)
 --now Group URI set
 sfToUriSet = GROUP distinctLinks BY surfaceForm;
@@ -123,12 +100,6 @@ sfToUriSet = GROUP distinctLinks BY surfaceForm;
 sfToUriFinal = FOREACH sfToUriSet GENERATE
 	group, distinctLinks.$1, COUNT(distinctLinks.$1);
 
---TEST
 --Now output to .TSV -Last directory in $dir is hard-coded
 STORE sfToUriFinal INTO '$DIR/test_sf_to_Uri_Final.TSV.bz2' USING PigStorage();
-
---TEST
---DUMP sfToUriFinal;
---DESCRIBE sfToUriFinal;
-
 
