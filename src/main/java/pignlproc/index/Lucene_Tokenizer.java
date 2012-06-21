@@ -59,7 +59,7 @@ public class Lucene_Tokenizer extends EvalFunc<DataBag> {
                 }
             }
             catch (IOException e) {
-                   //do nothing
+                   //shouldn't be thrown
             }
             return out;
 
