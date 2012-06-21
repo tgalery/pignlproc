@@ -44,7 +44,6 @@ paragraphs = FOREACH articles GENERATE
   FLATTEN(pignlproc.evaluation.ParagraphsWithLink(text, links, paragraphs))
   AS (paragraphIdx, paragraph, targetUri, startPos, endPos);
 
---Chris: working here 
 --Changes for indexing on small cluster
 contexts = FOREACH paragraphs GENERATE
 	targetUri AS uri,
