@@ -48,7 +48,6 @@ paragraphs = FOREACH articles GENERATE
   FLATTEN(pignlproc.evaluation.ParagraphsWithLink(text, links, paragraphs))
   AS (paragraphIdx, paragraph, targetUri, startPos, endPos);
 
---Chris: working here 
 --Changes for indexing on small cluster
 contexts = FOREACH paragraphs GENERATE
 	targetUri AS uri,
@@ -65,10 +64,4 @@ contexts = FOREACH paragraph_bag GENERATE
 	uri, tokens(paragraphs) AS tokens;
 
 STORE contexts INTO '$DIR/token_counts.TSV.bz2' USING PigStorage();
-
---TEST
---DUMP contexts;
---DESCRIBE contexts;
---end test
-
 
