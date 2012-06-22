@@ -59,7 +59,7 @@ by_uri = GROUP contexts by uri;
 paragraph_bag = FOREACH by_uri GENERATE
 	group as uri, contexts.paragraph as paragraphs;
 
---TOKENIZE, REMOVE STOPWORDS AND COUNT HERE - TODO: implement with DBpedia-Spotlight stopword list
+--TOKENIZE, REMOVE STOPWORDS AND COUNT HERE
 contexts = FOREACH paragraph_bag GENERATE
 	uri, tokens(paragraphs) AS tokens;
 
