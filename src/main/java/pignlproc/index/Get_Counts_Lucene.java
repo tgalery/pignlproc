@@ -35,30 +35,51 @@ import org.apache.pig.impl.logicalLayer.schema.Schema.FieldSchema;
 
 public class Get_Counts_Lucene extends EvalFunc<DataBag> {
 
-    public static final String ENGLISH_STOPWORDS_PATH = "stopwords.en.list";
+    //public static final String ENGLISH_STOPWORDS_PATH = "stopwords.en.list";
 
-    protected final HashSet<String> stopwords;
+    //protected final HashSet<String> stopwords;
+
     TupleFactory tupleFactory = TupleFactory.getInstance();
     BagFactory bagFactory = BagFactory.getInstance();
     //Hard-coded for the Lucene standard analyzer because this is unnecessary for this implementation
     static final String field = "paragraph";
 
+    /*
     public Get_Counts_Lucene () throws IOException {
         ClassLoader loader = getClass().getClassLoader();
 
-        String path = ENGLISH_STOPWORDS_PATH;
+       String path = ENGLISH_STOPWORDS_PATH;
         InputStream in = loader.getResourceAsStream(path);
         File file = new File(path);
 
         stopwords = Sets.newHashSet(Files.readLines(file, Charsets.UTF_8));
 
     }
+    */
+
+    public List<String> getCacheFiles() {
+        List<String> list = new ArrayList<String>(1);
+        //TODO: pass as a param! this will only work on the current hadoop DFS
+        list.add("/user/hadoop/stopwords.en.list");
+        return list;
+    }
 
     @Override
     public DataBag exec(Tuple input) throws IOException {
 
-        //TODO: pass in the dbpedia-spotlight stopword list
-        Analyzer analyzer = new EnglishAnalyzer(Version.LUCENE_36, stopwords);
+
+
+        //Test with distributed cache
+        HashSet<String> stopset = new HashSet<String>();
+        FileReader fr = new FileReader("./stopwords.en.list");
+        BufferedReader br = new BufferedReader(fr);
+        String line = null;
+        while ((line = br.readLine()) != null)
+        {
+               stopset.add(line);
+        }
+
+        Analyzer analyzer = new EnglishAnalyzer(Version.LUCENE_36, stopset);
 
         DataBag out = bagFactory.newDefaultBag();
         Object t0 = input.get(0);
