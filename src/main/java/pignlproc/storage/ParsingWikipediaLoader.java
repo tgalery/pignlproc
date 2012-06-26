@@ -107,13 +107,6 @@ public class ParsingWikipediaLoader extends RawWikipediaLoader implements
         paragraphInfoWrapper.setTwoLevelAccessRequired(true);
         schema.add(new FieldSchema("paragraphs", paragraphInfoWrapper, DataType.BAG));
 
-
-        //Chris: testing here
-        //Schema wrapper = new Schema();
-        //wrapper.add(new FieldSchema(null, schema));
-
-        //return new ResourceSchema(wrapper);
-        //end test
         return new ResourceSchema(schema);
     }
 
