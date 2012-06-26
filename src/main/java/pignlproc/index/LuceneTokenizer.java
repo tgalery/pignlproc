@@ -6,6 +6,7 @@ package pignlproc.index;
 import org.apache.lucene.analysis.Analyzer;
 
 import org.apache.lucene.analysis.TokenStream;
+import org.apache.lucene.analysis.en.EnglishAnalyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.analysis.tokenattributes.TermAttribute;
 import org.apache.lucene.util.Version;
@@ -32,14 +33,14 @@ import java.io.StringReader;
 public class LuceneTokenizer extends EvalFunc<DataBag> {
     TupleFactory tupleFactory = TupleFactory.getInstance();
     BagFactory bagFactory = BagFactory.getInstance();
-    //Hard-coded for the Lucene standard analyzer because this is unnecessary for this implementation
+    //Hard-coded for the Lucene analyzer because this is unnecessary for this implementation
     String field = "paragraph";
 
 
     @Override
     public DataBag exec(Tuple input) throws IOException {
 
-            Analyzer analyzer = new StandardAnalyzer(Version.LUCENE_30);
+            Analyzer analyzer = new EnglishAnalyzer(Version.LUCENE_36);
 
             DataBag out = bagFactory.newDefaultBag();
 
@@ -59,7 +60,7 @@ public class LuceneTokenizer extends EvalFunc<DataBag> {
                 }
             }
             catch (IOException e) {
-                   //shouldn't be thrown
+                   throw e;
             }
             return out;
 

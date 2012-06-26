@@ -33,10 +33,12 @@ import org.apache.pig.impl.logicalLayer.schema.Schema.FieldSchema;
  *
  */
 
-public class Get_Counts_Lucene extends EvalFunc<DataBag> {
+public class GetCountsLucene extends EvalFunc<DataBag> {
 
-    //public static final String ENGLISH_STOPWORDS_PATH = "stopwords.en.list";
+    //commented for testing
+    //public static final String ENGLISH_STOPWORDS_PATH = "/stopwords.en.list";
 
+    //commented for testing
     //protected final HashSet<String> stopwords;
 
     TupleFactory tupleFactory = TupleFactory.getInstance();
@@ -44,34 +46,50 @@ public class Get_Counts_Lucene extends EvalFunc<DataBag> {
     //Hard-coded for the Lucene standard analyzer because this is unnecessary for this implementation
     static final String field = "paragraph";
 
-    /*
-    public Get_Counts_Lucene () throws IOException {
-        ClassLoader loader = getClass().getClassLoader();
+    final String stoplist;
 
-       String path = ENGLISH_STOPWORDS_PATH;
-        InputStream in = loader.getResourceAsStream(path);
-        File file = new File(path);
 
-        stopwords = Sets.newHashSet(Files.readLines(file, Charsets.UTF_8));
+    public GetCountsLucene (String path) throws IOException {
 
-    }
-    */
+        stoplist = path;
+
+        //commented for testing
+        /*
+            ClassLoader loader = getClass().getClassLoader();
+
+           String path = ENGLISH_STOPWORDS_PATH;
+            InputStream in = loader.getResourceAsStream(path);
+            File file = new File(path);
+
+            stopwords = Sets.newHashSet(Files.readLines(file, Charsets.UTF_8));
+          */
+
+        }
+
+
+
 
     public List<String> getCacheFiles() {
         List<String> list = new ArrayList<String>(1);
-        //TODO: pass as a param! this will only work on the LIT@UNT Hadoop cluster (or any that has the stoplist in hdfs at "/user/hadoop/stopwords.en.list")
-        list.add("/user/hadoop/stopwords.en.list");
+        //TODO: (Testing) pass as a param! this will only work on the LIT@UNT Hadoop cluster (or any that has the stoplist in hdfs at "/user/hadoop/stopwords.en.list")
+        list.add(stoplist);
         return list;
     }
 
     @Override
     public DataBag exec(Tuple input) throws IOException {
 
+        //commented for testing
+        //String path = ENGLISH_STOPWORDS_PATH;
 
+        //commented for testing
+        //FileReader fr = new FileReader(path);
 
-        //Test with distributed cache
         HashSet<String> stopset = new HashSet<String>();
+        //uses hadoop distributed cache (via getCacheFiles)
         FileReader fr = new FileReader("./stopwords.en.list");
+
+
         BufferedReader br = new BufferedReader(fr);
         String line = null;
         while ((line = br.readLine()) != null)
@@ -96,6 +114,11 @@ public class Get_Counts_Lucene extends EvalFunc<DataBag> {
         Map <String, Integer> allCounts = new HashMap<String, Integer>();
         // TODO: think about a more efficient way to do this - this was necessary due to limited space on cluster
 
+
+
+
+
+
         while (it.hasNext())
         {
             //there should be only one item in each tuple
@@ -118,9 +141,10 @@ public class Get_Counts_Lucene extends EvalFunc<DataBag> {
                 }
             }
             catch (IOException e) {
-                //shouldn't be thrown
+                throw e;
             }
         }
+
 
         //add totals to output
         Iterator tuples = allCounts.entrySet().iterator();
