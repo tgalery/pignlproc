@@ -17,7 +17,7 @@ SET job.name 'Wikipedia-Token-Counts-per-URI for $LANG';
 REGISTER $PIGNLPROC_JAR;
 
 -- Define alias for tokenizer function
-DEFINE tokens pignlproc.index.Lucene_Tokenizer();
+DEFINE tokens pignlproc.index.LuceneTokenizer();
 
 
 --------------------
@@ -70,8 +70,13 @@ uri_token_counts = FOREACH tokens_by_uri GENERATE
 
 by_uri_all_tokens = GROUP uri_token_counts BY uri;
 
-counts = FOREACH by_uri_all_tokens GENERATE
-	group, uri_token_counts.(token, count); 
+--sort descending 
+counts = FOREACH by_uri_all_tokens {
+	unsorted = uri_token_counts.(token, count);
+	sorted = ORDER unsorted BY count; 	
+	GENERATE
+	  group, sorted; 
+}
 
 --Now output to .TSV --> Last directory in dir is hard-coded for now
 STORE counts INTO '$DIR/token_counts.TSV.bz2' USING PigStorage();

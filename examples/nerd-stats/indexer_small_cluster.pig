@@ -2,6 +2,7 @@
  * Wikipedia Statistics for Named Entity Recognition and Disambiguation
  *
  * @params $DIR - the directory where the files should be stored
+ *         $STOPLIST - the location of the stoplist in HDFS		
  *         $INPUT - the wikipedia XML dump
  *         $PIGNLPROC_JAR - the location of the pignlproc jar
  *         $LANG - the language of the Wikidump 
@@ -17,7 +18,7 @@ SET job.name 'Wikipedia-Token-Counts-per-URI for $LANG';
 REGISTER $PIGNLPROC_JAR;
 
 -- Define alias for tokenizer function
-DEFINE tokens pignlproc.index.Get_Counts_Lucene();
+DEFINE tokens pignlproc.index.GetCountsLucene('$STOPLIST');
 
 
 --------------------
@@ -61,7 +62,14 @@ paragraph_bag = FOREACH by_uri GENERATE
 
 --TOKENIZE, REMOVE STOPWORDS AND COUNT HERE
 contexts = FOREACH paragraph_bag GENERATE
-	uri, tokens(paragraphs) AS tokens;
+	uri, tokens(paragraphs) as tokens;
 
-STORE contexts INTO '$DIR/token_counts.TSV.bz2' USING PigStorage();
+freq_sorted = FOREACH contexts {
+	unsorted = tokens.(token, count);
+	sorted = ORDER unsorted BY count desc;
+	GENERATE
+	 uri, sorted;
+}
+
+STORE freq_sorted INTO '$DIR/token_counts.TSV.bz2' USING PigStorage();
 
