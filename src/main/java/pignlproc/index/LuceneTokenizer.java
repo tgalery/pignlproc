@@ -29,7 +29,7 @@ import java.io.StringReader;
  * Take a bag of paragraphs (usage contexts) and emit a bag of tokens using the Lucene Standard analyzer
  *
  */
-public class Lucene_Tokenizer extends EvalFunc<DataBag> {
+public class LuceneTokenizer extends EvalFunc<DataBag> {
     TupleFactory tupleFactory = TupleFactory.getInstance();
     BagFactory bagFactory = BagFactory.getInstance();
     //Hard-coded for the Lucene standard analyzer because this is unnecessary for this implementation

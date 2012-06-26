@@ -59,7 +59,7 @@ public class Get_Counts_Lucene extends EvalFunc<DataBag> {
 
     public List<String> getCacheFiles() {
         List<String> list = new ArrayList<String>(1);
-        //TODO: pass as a param! this will only work on the current hadoop DFS
+        //TODO: pass as a param! this will only work on the LIT@UNT Hadoop cluster (or any that has the stoplist in hdfs at "/user/hadoop/stopwords.en.list")
         list.add("/user/hadoop/stopwords.en.list");
         return list;
     }
@@ -94,8 +94,7 @@ public class Get_Counts_Lucene extends EvalFunc<DataBag> {
         Iterator<Tuple> it = allParagraphs.iterator();
 
         Map <String, Integer> allCounts = new HashMap<String, Integer>();
-        // TODO: think about a more efficient way to do this - this was necessary due to limited
-        //space on cluster
+        // TODO: think about a more efficient way to do this - this was necessary due to limited space on cluster
 
         while (it.hasNext())
         {
