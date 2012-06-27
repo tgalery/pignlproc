@@ -20,8 +20,14 @@ import org.apache.pig.data.TupleFactory;
 import org.apache.pig.impl.logicalLayer.schema.Schema;
 import org.apache.pig.impl.logicalLayer.schema.Schema.FieldSchema;
 
+import java.io.BufferedReader;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.StringReader;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 
 /**
@@ -36,11 +42,36 @@ public class LuceneTokenizer extends EvalFunc<DataBag> {
     //Hard-coded for the Lucene analyzer because this is unnecessary for this implementation
     String field = "paragraph";
 
+    //TODO: how to read the stopwords file?? - testing in constructor
+    protected Analyzer analyzer;
+    private TokenStream stream = null;
+
+    final String stoplist;
+    final HashSet<String> stopset;
+
+
+    public LuceneTokenizer(String path) throws  IOException {
+        stoplist = path;
+        getCacheFiles(); //TODO: see if this works - hackish implementation
+
+        stopset = new HashSet<String>();
+        //uses hadoop distributed cache (via getCacheFiles)
+        FileReader fr = new FileReader("./stopwords.en.list");
+
+        BufferedReader br = new BufferedReader(fr);
+        String line = null;
+        while ((line = br.readLine()) != null)
+        {
+            stopset.add(line);
+        }
+
+        analyzer =  new EnglishAnalyzer(Version.LUCENE_36, stopset);
+        stream = analyzer.reusableTokenStream(field, new StringReader(""));
+    }
+
 
     @Override
     public DataBag exec(Tuple input) throws IOException {
-
-            Analyzer analyzer = new EnglishAnalyzer(Version.LUCENE_36);
 
             DataBag out = bagFactory.newDefaultBag();
 
@@ -51,7 +82,9 @@ public class LuceneTokenizer extends EvalFunc<DataBag> {
                              + t0.getClass().getName());
              }
 
-            TokenStream stream = analyzer.tokenStream(field, new StringReader((String)t0));
+
+            //TODO: test this
+            stream = analyzer.reusableTokenStream(field, new StringReader((String)t0));
 
             try {
                 while (stream.incrementToken()) {
@@ -64,6 +97,13 @@ public class LuceneTokenizer extends EvalFunc<DataBag> {
             }
             return out;
 
+    }
+
+    public List<String> getCacheFiles() {
+        List<String> list = new ArrayList<String>(1);
+
+        list.add(stoplist);
+        return list;
     }
 
     public Schema outputSchema(Schema input) {
