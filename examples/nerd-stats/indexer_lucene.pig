@@ -2,7 +2,9 @@
  * Wikipedia Statistics for Named Entity Recognition and Disambiguation
  *
  * @params $DIR - the directory where the files should be stored
+ *         $STOPLIST - the location of the stoplist in HDFS		
  *         $INPUT - the wikipedia XML dump
+ *         $MIN_COUNT - the minumum count for a token to be included in the index
  *         $PIGNLPROC_JAR - the location of the pignlproc jar
  *         $LANG - the language of the Wikidump 
  */
@@ -17,7 +19,7 @@ SET job.name 'Wikipedia-Token-Counts-per-URI for $LANG';
 REGISTER $PIGNLPROC_JAR;
 
 -- Define alias for tokenizer function
-DEFINE tokens pignlproc.index.LuceneTokenizer();
+DEFINE tokens pignlproc.index.LuceneTokenizer('$STOPLIST');
 
 
 --------------------
@@ -73,13 +75,14 @@ by_uri_all_tokens = GROUP uri_token_counts BY uri;
 --sort descending 
 counts = FOREACH by_uri_all_tokens {
 	unsorted = uri_token_counts.(token, count);
-	sorted = ORDER unsorted BY count; 	
+	filtered = FILTER unsorted BY (count >= $MIN_COUNT);
+	sorted = ORDER filtered BY count desc; 	
 	GENERATE
 	  group, sorted; 
 }
 
 --Now output to .TSV --> Last directory in dir is hard-coded for now
-STORE counts INTO '$DIR/token_counts.TSV.bz2' USING PigStorage();
+STORE counts INTO '$DIR/token_counts_big_cluster.TSV.bz2' USING PigStorage();
 
 --TEST
 --DUMP counts;
