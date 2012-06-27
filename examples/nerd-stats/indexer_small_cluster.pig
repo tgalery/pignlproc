@@ -4,6 +4,7 @@
  * @params $DIR - the directory where the files should be stored
  *         $STOPLIST - the location of the stoplist in HDFS		
  *         $INPUT - the wikipedia XML dump
+ *         $MIN_COUNT - the minumum count for a token to be included in the index
  *         $PIGNLPROC_JAR - the location of the pignlproc jar
  *         $LANG - the language of the Wikidump 
  */
@@ -66,7 +67,9 @@ contexts = FOREACH paragraph_bag GENERATE
 
 freq_sorted = FOREACH contexts {
 	unsorted = tokens.(token, count);
-	sorted = ORDER unsorted BY count desc;
+        filtered = FILTER unsorted BY (count >= $MIN_COUNT);
+	-- sort descending
+	sorted = ORDER filtered BY count desc;
 	GENERATE
 	 uri, sorted;
 }
