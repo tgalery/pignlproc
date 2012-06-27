@@ -35,12 +35,6 @@ import org.apache.pig.impl.logicalLayer.schema.Schema.FieldSchema;
 
 public class GetCountsLucene extends EvalFunc<DataBag> {
 
-    //commented for testing
-    //public static final String ENGLISH_STOPWORDS_PATH = "/stopwords.en.list";
-
-    //commented for testing
-    //protected final HashSet<String> stopwords;
-
     TupleFactory tupleFactory = TupleFactory.getInstance();
     BagFactory bagFactory = BagFactory.getInstance();
     //Hard-coded for the Lucene standard analyzer because this is unnecessary for this implementation
@@ -52,18 +46,6 @@ public class GetCountsLucene extends EvalFunc<DataBag> {
     public GetCountsLucene (String path) throws IOException {
 
         stoplist = path;
-
-        //commented for testing
-        /*
-            ClassLoader loader = getClass().getClassLoader();
-
-           String path = ENGLISH_STOPWORDS_PATH;
-            InputStream in = loader.getResourceAsStream(path);
-            File file = new File(path);
-
-            stopwords = Sets.newHashSet(Files.readLines(file, Charsets.UTF_8));
-          */
-
         }
 
 
