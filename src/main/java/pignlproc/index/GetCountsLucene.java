@@ -71,19 +71,13 @@ public class GetCountsLucene extends EvalFunc<DataBag> {
 
     public List<String> getCacheFiles() {
         List<String> list = new ArrayList<String>(1);
-        //TODO: (Testing) pass as a param! this will only work on the LIT@UNT Hadoop cluster (or any that has the stoplist in hdfs at "/user/hadoop/stopwords.en.list")
+
         list.add(stoplist);
         return list;
     }
 
     @Override
     public DataBag exec(Tuple input) throws IOException {
-
-        //commented for testing
-        //String path = ENGLISH_STOPWORDS_PATH;
-
-        //commented for testing
-        //FileReader fr = new FileReader(path);
 
         HashSet<String> stopset = new HashSet<String>();
         //uses hadoop distributed cache (via getCacheFiles)
