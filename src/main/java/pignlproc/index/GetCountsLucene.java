@@ -14,6 +14,7 @@ import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.en.EnglishAnalyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
+import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
 import org.apache.lucene.analysis.tokenattributes.TermAttribute;
 import org.apache.lucene.util.Version;
 import org.apache.pig.EvalFunc;
@@ -37,43 +38,50 @@ public class GetCountsLucene extends EvalFunc<DataBag> {
 
     TupleFactory tupleFactory = TupleFactory.getInstance();
     BagFactory bagFactory = BagFactory.getInstance();
+
+    //TODO: test
+    //String language;
+
     //Hard-coded for the Lucene standard analyzer because this is unnecessary for this implementation
     static final String field = "paragraph";
 
-    final String stoplist;
+    private String stoplist_path; //the path to the stoplist
+    private String stoplist_name; //the name of the stoplist
+    private HashSet<String> stopset = new HashSet<String>();
+    protected Analyzer analyzer;
+    private TokenStream stream = null;
 
 
-    public GetCountsLucene (String path) throws IOException {
-
-        stoplist = path;
-        }
-
-
-
+    public GetCountsLucene (String path, String name) throws IOException {
+        stoplist_path = path;
+        stoplist_name = name;
+        //language = lang;
+    }
 
     public List<String> getCacheFiles() {
         List<String> list = new ArrayList<String>(1);
 
-        list.add(stoplist);
+        list.add(stoplist_path);
         return list;
     }
 
     @Override
     public DataBag exec(Tuple input) throws IOException {
 
-        HashSet<String> stopset = new HashSet<String>();
-        //uses hadoop distributed cache (via getCacheFiles)
-        FileReader fr = new FileReader("./stopwords.en.list");
-
-
-        BufferedReader br = new BufferedReader(fr);
-        String line = null;
-        while ((line = br.readLine()) != null)
+        if (stopset.isEmpty())
         {
-               stopset.add(line);
-        }
+            //uses hadoop distributed cache (via getCacheFiles)
+            FileReader fr = new FileReader("./" + stoplist_name);
 
-        Analyzer analyzer = new EnglishAnalyzer(Version.LUCENE_36, stopset);
+            BufferedReader br = new BufferedReader(fr);
+            String line = null;
+            while ((line = br.readLine()) != null)
+            {
+                   stopset.add(line);
+            }
+
+            analyzer = new EnglishAnalyzer(Version.LUCENE_36, stopset);
+        }
 
         DataBag out = bagFactory.newDefaultBag();
         Object t0 = input.get(0);
@@ -88,39 +96,31 @@ public class GetCountsLucene extends EvalFunc<DataBag> {
         Iterator<Tuple> it = allParagraphs.iterator();
 
         Map <String, Integer> allCounts = new HashMap<String, Integer>();
-        // TODO: think about a more efficient way to do this - this was necessary due to limited space on cluster
+        // TODO: this was necessary due to limited space on cluster
 
 
-
-
-
-
-        while (it.hasNext())
+        //TODO: testing here
+        for (Tuple t : allParagraphs)
         {
             //there should be only one item in each tuple
-            String text = (String) it.next().get(0);
+            String text = (String)t.get(0);
 
-            TokenStream stream = analyzer.tokenStream(field, new StringReader(text));
+            stream = analyzer.reusableTokenStream(field, new StringReader(text));
 
-            try {
-                while (stream.incrementToken()) {
-                    String token = stream.getAttribute(TermAttribute.class).term();
-                    if (!(allCounts.containsKey(token)))
-                    {
-                        allCounts.put(token, 1);
-                    }
-                    else
-                    {
-                        Integer i = allCounts.get(token)+1;
-                        allCounts.put(token, i);
-                    }
-                }
-            }
-            catch (IOException e) {
-                throw e;
-            }
+             while (stream.incrementToken()) {
+                 String token = stream.getAttribute(CharTermAttribute.class).toString();
+                 if (!(allCounts.containsKey(token)))
+                 {
+                     allCounts.put(token, 1);
+                 }
+                 else
+                 {
+                     Integer i = allCounts.get(token)+1;
+                     allCounts.put(token, i);
+                 }
+             }
+
         }
-
 
         //add totals to output
         Iterator tuples = allCounts.entrySet().iterator();
