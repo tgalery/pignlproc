@@ -2,7 +2,8 @@
  * Wikipedia Statistics for Named Entity Recognition and Disambiguation
  *
  * @params $DIR - the directory where the files should be stored
- *         $STOPLIST - the location of the stoplist in HDFS		
+ *         $STOPLIST_PATH - the location of the stoplist in HDFS		
+ *         $STOPLIST_NAME - the filename of the stoplist
  *         $INPUT - the wikipedia XML dump
  *         $MIN_COUNT - the minumum count for a token to be included in the index
  *         $PIGNLPROC_JAR - the location of the pignlproc jar
@@ -19,7 +20,8 @@ SET job.name 'Wikipedia-Token-Counts-per-URI for $LANG';
 REGISTER $PIGNLPROC_JAR;
 
 -- Define alias for tokenizer function
-DEFINE tokens pignlproc.index.LuceneTokenizer('$STOPLIST');
+DEFINE tokens pignlproc.index.LuceneTokenizer('$STOPLIST_PATH', '$STOPLIST_NAME');
+
 
 
 --------------------
