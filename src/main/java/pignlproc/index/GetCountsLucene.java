@@ -17,6 +17,7 @@ import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
 import org.apache.lucene.analysis.tokenattributes.TermAttribute;
 import org.apache.lucene.util.Version;
+
 import org.apache.pig.EvalFunc;
 import org.apache.pig.data.BagFactory;
 import org.apache.pig.data.DataBag;
@@ -93,7 +94,7 @@ public class GetCountsLucene extends EvalFunc<DataBag> {
         }
 
         DataBag allParagraphs = (DataBag) t0;
-        Iterator<Tuple> it = allParagraphs.iterator();
+        //Iterator<Tuple> it = allParagraphs.iterator();
 
         Map <String, Integer> allCounts = new HashMap<String, Integer>();
         // TODO: this was necessary due to limited space on cluster
