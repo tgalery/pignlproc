@@ -30,6 +30,20 @@ public class ParagraphsWithLink extends EvalFunc<DataBag> {
 
     BagFactory bagFactory = BagFactory.getInstance();
 
+    Integer maxSpanLength;
+
+
+    public ParagraphsWithLink(String max) throws IOException {
+        try {
+            maxSpanLength = Integer.parseInt(max);
+        }
+        catch (NumberFormatException e)
+        {
+            String msg = "error in ParagraphsWithLink - param cannot be converted to Integer";
+            throw new NumberFormatException(msg);
+        }
+    }
+
     @SuppressWarnings("unchecked")
     @Override
     public DataBag exec(Tuple input) throws IOException {
@@ -76,26 +90,29 @@ public class ParagraphsWithLink extends EvalFunc<DataBag> {
             // number of chars not to break the annotations
             paragraph = paragraph.replaceAll("\n", " ");
             paragraph = paragraph.replaceAll("\t", " ");
+            if (paragraph.length() < maxSpanLength)
+            {
+                //Create a Span so that we can use contains(Span link)
+                Span paragraph_span = new Span(beginParagraph, endParagraph);
+                //now iterate over the list of links until the next link is no longer contained in this paragraph - once the tuple is created, remove the link from the list to leverage the ordering
+                for (Span link : linkSpans) {
+                    if (paragraph_span.contains(link)) {
+                        int begin = link.getStart()
+                                - paragraph_span.getStart();
+                        int end = link.getEnd() - paragraph_span.getStart();
+                        output.add(tupleFactory.newTupleNoCopy(Arrays.asList(
+                                order, paragraph, link.getType(), begin, end)));
+                        //linkSpans.remove(link);
 
-            //Create a Span so that we can use contains(Span link)
-            Span paragraph_span = new Span(beginParagraph, endParagraph);
-            //now iterate over the list of links until the next link is no longer contained in this paragraph - once the tuple is created, remove the link from the list to leverage the ordering
-            for (Span link : linkSpans) {
-                if (paragraph_span.contains(link)) {
-                    int begin = link.getStart()
-                            - paragraph_span.getStart();
-                    int end = link.getEnd() - paragraph_span.getStart();
-                    output.add(tupleFactory.newTupleNoCopy(Arrays.asList(
-                            order, paragraph, link.getType(), begin, end)));
-                    //linkSpans.remove(link);
+                    }
+                    else if (link.compareTo(paragraph_span) > 1) {
+                        break;
+                    }
+                  }
+              }
+          }
 
-                }
-                else if (link.compareTo(paragraph_span) > 1) {
-                    break;
-                }
-            }
-        }
-        return output;
+          return output;
 
     }
 

@@ -6,6 +6,7 @@
  *         $PIGNLPROC_JAR - the location of the pignlproc jar
  *         $LANG - the language of the Wikidump 
  *         $URI_LIST - a list of URIs to filter by
+ *         $MAX_SPAN_LENGTH - the maximum length for a paragraph span
  */
 
 
@@ -19,6 +20,7 @@ REGISTER $PIGNLPROC_JAR;
 
 -- Define alias for tokenizer function
 DEFINE concatenate pignlproc.helpers.Concatenate();
+DEFINE textWithLink pignlproc.evaluation.ParagraphsWithLink('$MAX_SPAN_LENGTH');
 
 
 --------------------
@@ -50,7 +52,7 @@ articles = FOREACH parsedNonRedirects GENERATE
 -- Extract paragraph contexts of the links 
 paragraphs = FOREACH articles GENERATE
   pageUrl,
-  FLATTEN(pignlproc.evaluation.ParagraphsWithLink(text, links, paragraphs))
+  FLATTEN(textWithLink(text, links, paragraphs))
   AS (paragraphIdx, paragraph, targetUri, startPos, endPos);
 
 filtered = JOIN paragraphs BY targetUri, uri_list BY uri USING 'replicated';
