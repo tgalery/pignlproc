@@ -65,7 +65,7 @@ public class LuceneTokenizer extends EvalFunc<DataBag> {
     @Override
     public DataBag exec(Tuple input) throws IOException {
 
-        if (stopset.isEmpty())
+        if (stopset == null)
         {
             //uses hadoop distributed cache (via getCacheFiles)
             FileReader fr = new FileReader("./" + stoplist_name);
