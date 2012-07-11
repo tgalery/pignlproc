@@ -21,7 +21,7 @@ REGISTER $PIGNLPROC_JAR;
 
 -- Define alias for tokenizer function
 DEFINE tokens pignlproc.index.GetCountsLucene('$STOPLIST_PATH', '$STOPLIST_NAME');
-
+DEFINE textWithLink pignlproc.evaluation.ParagraphsWithLink('$MAX_SPAN_LENGTH');
 
 --------------------
 -- prepare
@@ -75,5 +75,4 @@ freq_sorted = FOREACH contexts {
 	 uri, sorted;
 }
 
-STORE freq_sorted INTO '$DIR/token_counts.TSV.bz2' USING PigStorage();
-
+STORE freq_sorted INTO '$DIR/token_counts.TSV.bz2' USING JsonStorage(); 

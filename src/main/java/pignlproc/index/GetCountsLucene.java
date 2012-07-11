@@ -48,7 +48,7 @@ public class GetCountsLucene extends EvalFunc<DataBag> {
 
     private String stoplist_path; //the path to the stoplist
     private String stoplist_name; //the name of the stoplist
-    private HashSet<String> stopset = new HashSet<String>();
+    private HashSet<String> stopset = null;
     protected Analyzer analyzer;
     private TokenStream stream = null;
 
@@ -76,6 +76,7 @@ public class GetCountsLucene extends EvalFunc<DataBag> {
 
             BufferedReader br = new BufferedReader(fr);
             String line = null;
+            stopset = new HashSet<String>();
             while ((line = br.readLine()) != null)
             {
                    stopset.add(line);

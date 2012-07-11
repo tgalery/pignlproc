@@ -47,7 +47,7 @@ public class LuceneTokenizer extends EvalFunc<DataBag> {
 
     private String stoplist_path; //the path to the stoplist
     private String stoplist_name; //the name of the stoplist
-    private HashSet<String> stopset = new HashSet<String>();
+    private HashSet<String> stopset = null;
     protected Analyzer analyzer;
     private TokenStream stream = null;
 
@@ -69,7 +69,7 @@ public class LuceneTokenizer extends EvalFunc<DataBag> {
         {
             //uses hadoop distributed cache (via getCacheFiles)
             FileReader fr = new FileReader("./" + stoplist_name);
-
+            stopset = new HashSet<String>();
             BufferedReader br = new BufferedReader(fr);
             String line = null;
             while ((line = br.readLine()) != null)
