@@ -8,6 +8,7 @@
  *         $MIN_COUNT - the minumum count for a token to be included in the index
  *         $PIGNLPROC_JAR - the location of the pignlproc jar
  *         $LANG - the language of the Wikidump 
+ *         $MAX_SPAN_LENGTH - the maximum length (in chars) for a paragraph span
  */
 
 
