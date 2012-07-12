@@ -49,7 +49,7 @@ articles = FOREACH parsedNonRedirects GENERATE
 -- Extract paragraph contexts of the links 
 paragraphs = FOREACH articles GENERATE
   pageUrl,
-  FLATTEN(pignlproc.evaluation.ParagraphsWithLink(text, links, paragraphs))
+  FLATTEN(textWithLink(text, links, paragraphs))
   AS (paragraphIdx, paragraph, targetUri, startPos, endPos);
 
 --Changes for indexing on small cluster
@@ -76,4 +76,4 @@ freq_sorted = FOREACH contexts {
 	 uri, sorted;
 }
 
-STORE freq_sorted INTO '$DIR/token_counts.TSV.bz2' USING JsonStorage(); 
+STORE freq_sorted INTO '$DIR/token_counts.JSON' USING JsonStorage(); 
