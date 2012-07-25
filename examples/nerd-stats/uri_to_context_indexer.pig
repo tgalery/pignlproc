@@ -4,7 +4,8 @@
  * @params $DIR - the directory where the files should be stored
  *         $INPUT - the wikipedia XML dump
  *         $PIGNLPROC_JAR - the location of the pignlproc jar
- *         $LANG - the language of the Wikidump 
+ *         $LANG - the language of the Wikidump
+ *         $MAX_SPAN_LENGTH - the maximum length for a paragraph span 
  */
 
 
@@ -15,6 +16,9 @@ SET job.name 'URI to context index for $LANG';
 
 -- Register the project jar to use the custom loaders and UDFs
 REGISTER $PIGNLPROC_JAR;
+
+DEFINE concatenate pignlproc.helpers.Concatenate();
+DEFINE textWithLink pignlproc.evaluation.ParagraphsWithLink('$MAX_SPAN_LENGTH');
 
 --------------------
 -- prepare
@@ -41,7 +45,7 @@ articles = FOREACH parsedNonRedirects GENERATE
 -- Extract paragraph contexts of the links 
 paragraphs = FOREACH articles GENERATE
   pageUrl,
-  FLATTEN(pignlproc.evaluation.ParagraphsWithLink(text, links, paragraphs))
+  FLATTEN(textWithLink(text, links, paragraphs))
   AS (paragraphIdx, paragraph, targetUri, startPos, endPos);
 
 --Changes for indexing on small cluster
@@ -51,14 +55,17 @@ contexts = FOREACH paragraphs GENERATE
 
 -- this is reduce #1
 by_uri = GROUP contexts by uri;
+--Testing here
+--DESCRIBE by_uri;
+filtered = FILTER by_uri by COUNT(contexts.uri) > 10;
 
-paragraph_bag = FOREACH by_uri GENERATE
-	group as uri, FLATTEN(contexts.paragraph) as paragraph;
+paragraph_bag = FOREACH filtered GENERATE
+	group as uri, concatenate(contexts.paragraph) as context: chararray;
 
 ordered = order paragraph_bag by uri;
 
 --Now output to .TSV --> Last directory in dir is hard-coded for now
-STORE ordered INTO '$DIR/uri_to_context.TSV.bz2' USING PigStorage();
+STORE ordered INTO '$DIR/uri_to_aggregate_context.TSV.bz2' USING PigStorage();
 
 --TEST
 --DUMP ordered;

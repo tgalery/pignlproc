@@ -76,4 +76,4 @@ freq_sorted = FOREACH contexts {
 	 uri, sorted;
 }
 
-STORE freq_sorted INTO '$DIR/token_counts.JSON' USING JsonStorage(); 
+STORE freq_sorted INTO '$DIR/token_counts.JSON.bz2' USING JsonStorage(); 
