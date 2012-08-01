@@ -119,13 +119,13 @@ docs_with_weights = FOREACH by_docs GENERATE
 --DESCRIBE docs_with_weights; 
 ordered = FOREACH docs_with_weights {
 	terms = tokens;
-	sorted = ORDER terms by weight;
+	sorted = ORDER terms by weight desc;
 	GENERATE 
 	uri, sorted;	
 }
-DUMP ordered;
-DESCRIBE ordered;
-
+--DUMP ordered;
+--DESCRIBE ordered;
+STORE ordered INTO '$OUTPUT_DIR/token_counts.json.bz2' USING JsonCompressedStorage();
 --tfidf_all = FOREACH token_usages {
 --              idf    = LOG((double)$NDOCS/(double)num_docs_with_token);
 --              tf_idf = (double)term_freq*idf;
