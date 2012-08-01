@@ -1,0 +1,26 @@
+#Default params for running indexing using Pignlproc scripts
+# input: (uncompressed??) Wikipedia XML dump
+#INPUT=/home/chris/projects/pignlproc/src/test/resources/enwiki-latest-pages-articles-1000.xml
+INPUT=/home/chris/projects/pignlproc/src/test/resources/enwiki-pages-articles-sample.xml
+LANG=en
+
+#Configuration
+MAX_SPAN_LENGTH=5000
+MIN_COUNT=2
+#this constant is chosen based upon the reported number of DBpediaResources
+NUM_DOCS=3000000
+
+# output directory in HDFS
+OUTPUT_DIR=/user/hadoop/output
+
+# location of the stop word list file in HDFS
+STOPLIST_NAME=stopwords.en.list
+STOPLIST_PATH=/user/hadoop/input
+# local path to JAR containing UDFs
+PIGNLPROC_JAR=/local/pignlproc/pignlproc-0.1.0-SNAPSHOT.jar
+# number of reducers
+DEFAULT_PARALLEL=15
+
+# compression of output dataset
+#COMPRESS_OUTPUT=
+#OUTPUT_COMPRESSION_CODEC=org.apache.hadoop.io.compress.GzipCodec
