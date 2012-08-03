@@ -57,23 +57,60 @@ paragraphs = FOREACH articles GENERATE
 -- BEGIN TFIDF --
 -----------------
 -- (1) group by uri
-doc_token = FOREACH paragraphs GENERATE
+--doc_token = FOREACH paragraphs GENERATE
+--        targetUri AS uri,
+--        FLATTEN(getTokens(paragraph)) AS token;
+
+doc_context = FOREACH paragraphs GENERATE
         targetUri AS uri,
-        FLATTEN(getTokens(paragraph)) AS token;
+        getTokens(paragraph) AS context;
+
+--add relation here to filter by number of contexts
+all_contexts = GROUP doc_context by uri;
+
+size_filter = FILTER all_contexts BY
+		COUNT(doc_context) > 10;
+
+
+--DESCRIBE doc_context;
+--DESCRIBE all_contexts;
+--DESCRIBE size_filter;
+flattened_context = FOREACH size_filter {
+	contexts = doc_context.context;
+ 	GENERATE
+	group AS uri,
+	FLATTEN(contexts) AS context; 
+--	contexts = FLATTEN(doc_context);
+--	tokenbag = contexts.context;
+--	tokens = FLATTEN(tokenbag);
+--	GENERATE
+--	group AS uri,
+--	FLATTEN(tokens) AS token;
+};
+
+uri_and_token = FOREACH flattened_context GENERATE
+	uri,
+	FLATTEN(context) AS token;
+
+--DESCRIBE flattened_context;	
+--DESCRIBE uri_and_token;		
+	
 --DESCRIBE doc_token;
-
+--
+--TODO - consider tf normalization - i.e. tf/|tokens|
+--
 -- (2) group by token and Unique Doc to get global doc frequency
-unique = DISTINCT doc_token;
-
+unique = DISTINCT uri_and_token;
+--
 docs_by_tokens = group unique by token;
-
+--
 --DUMP docs_by_tokens;
 --DESCRIBE docs_by_tokens; 
-
+--
 doc_freq = FOREACH docs_by_tokens GENERATE
 	group AS token,
 	COUNT(unique) as df;
-
+--
 --NUM_DOCS should be the total number of RESOURCES
 idf = foreach doc_freq GENERATE
 	token,
@@ -82,23 +119,22 @@ idf = foreach doc_freq GENERATE
 --DESCRIBE idf;
 --ordered = order doc_freq BY df desc;
 --STORE ordered into '$OUTPUT_DIR/doc-frquency.json.bz2' USING JsonCompressedStorage;
-
+--
 --(3) Term Frequency
-term_freq = GROUP doc_token by (uri, token);
+term_freq = GROUP uri_and_token by (uri, token);
 term_counts = FOREACH term_freq GENERATE
 	group.uri as uri,
 	group.token as token,
-	COUNT(doc_token) as tf;
-
-
-
+	COUNT(uri_and_token) as tf;
+--
+--
 --(4) put the data together
 token_instances = JOIN term_counts BY token, idf by token; 
 --DUMP token_instances;
 --DESCRIBE token_instances;
-
---(5) calculate tfidf using $NUM_DOCS - note that the user must know how many RESOURCES there are, not how many docs
-DESCRIBE token_instances;
+--
+----(5) calculate tfidf using $NUM_DOCS - note that the user must know how many RESOURCES there are, not how many docs
+--DESCRIBE token_instances;
 tfidf = FOREACH token_instances {
 	tf_idf = (double)term_counts::tf*(double)idf::idf;
 		GENERATE 
@@ -110,11 +146,11 @@ tfidf = FOREACH token_instances {
 by_docs = group tfidf BY uri;
 --DESCRIBE by_docs;
 --DUMP by_docs;
-
+--
 docs_with_weights = FOREACH by_docs GENERATE
 	group as uri,
 	tfidf.(token,weight) as tokens; 
-
+--
 --DUMP docs_with_weights;
 --DESCRIBE docs_with_weights; 
 ordered = FOREACH docs_with_weights {
@@ -122,41 +158,43 @@ ordered = FOREACH docs_with_weights {
 	sorted = ORDER terms by weight desc;
 	GENERATE 
 	uri, sorted;	
-}
---DUMP ordered;
---DESCRIBE ordered;
+};
 STORE ordered INTO '$OUTPUT_DIR/token_counts.json.bz2' USING JsonCompressedStorage();
---tfidf_all = FOREACH token_usages {
---              idf    = LOG((double)$NDOCS/(double)num_docs_with_token);
---              tf_idf = (double)term_freq*idf;
---                GENERATE
---                  doc_id AS doc_id,
---                  token  AS token,
---                  tf_idf AS tf_idf
---                ;
---             };
--- GENERATE
---	FLATTEN(term_counts) AS instance;
-	
-
-
-
---TEST
---ordered = ORDER counts by tf desc;
 --DUMP ordered;
 --DESCRIBE ordered;
 
 
-
---DESCRIBE uri_to_tokens;
---token_bag = FOREACH paragraph_bag GENERATE
---	uri, getTokens();
-
---The following steps are done to get doc freq
---grouped = GROUP uri_to_tokens ALL;
---DESCRIBE grouped;
-
---tokens = FOREACH grouped GENERATE
---	FLATTEN(uri_to_tokens.context) as tokens;
---DESCRIBE tokens;
---DUMP tokens;
+----tfidf_all = FOREACH token_usages {
+----              idf    = LOG((double)$NDOCS/(double)num_docs_with_token);
+----              tf_idf = (double)term_freq*idf;
+----                GENERATE
+----                  doc_id AS doc_id,
+----                  token  AS token,
+----                  tf_idf AS tf_idf
+----                ;
+----             };
+---- GENERATE
+----	FLATTEN(term_counts) AS instance;
+--	
+--
+--
+--
+----TEST
+----ordered = ORDER counts by tf desc;
+----DUMP ordered;
+----DESCRIBE ordered;
+--
+--
+--
+----DESCRIBE uri_to_tokens;
+----token_bag = FOREACH paragraph_bag GENERATE
+----	uri, getTokens();
+--
+----The following steps are done to get doc freq
+----grouped = GROUP uri_to_tokens ALL;
+----DESCRIBE grouped;
+--
+----tokens = FOREACH grouped GENERATE
+----	FLATTEN(uri_to_tokens.context) as tokens;
+----DESCRIBE tokens;
+----DUMP tokens;
