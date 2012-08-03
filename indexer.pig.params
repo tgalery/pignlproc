@@ -1,7 +1,7 @@
 #Default params for running indexing using Pignlproc scripts
 # input: (uncompressed??) Wikipedia XML dump
 #INPUT=/home/chris/projects/pignlproc/src/test/resources/enwiki-latest-pages-articles-1000.xml
-INPUT=/home/chris/projects/pignlproc/src/test/resources/enwiki-pages-articles-sample.xml
+INPUT=/user/hadoop/wikidump/enwiki-latest-pages-articles.xml
 LANG=en
 
 #Configuration
