@@ -69,8 +69,7 @@ doc_context = FOREACH paragraphs GENERATE
 all_contexts = GROUP doc_context by uri;
 
 size_filter = FILTER all_contexts BY
-		COUNT(doc_context) > 10;
-
+		COUNT(doc_context) > 20;
 
 --DESCRIBE doc_context;
 --DESCRIBE all_contexts;
@@ -107,9 +106,11 @@ docs_by_tokens = group unique by token;
 --DUMP docs_by_tokens;
 --DESCRIBE docs_by_tokens; 
 --
-doc_freq = FOREACH docs_by_tokens GENERATE
+raw_doc_freq = FOREACH docs_by_tokens GENERATE
 	group AS token,
 	COUNT(unique) as df;
+
+doc_freq = FILTER raw_doc_freq BY df > $MIN_COUNT;
 --
 --NUM_DOCS should be the total number of RESOURCES
 idf = foreach doc_freq GENERATE
