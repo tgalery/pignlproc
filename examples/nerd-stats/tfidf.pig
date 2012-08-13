@@ -10,6 +10,7 @@
  *         $LANG - the language of the Wikidump 
  *         $MAX_SPAN_LENGTH - the maximum length for a paragraph span
  *         $NUM_DOCS - the number of documents in this wikipedia dump
+ *         $N - the number of tokens to keep
  *         - use the file 'indexer.pig.params' to supply a default configuration
  */
 
@@ -27,7 +28,7 @@ REGISTER $PIGNLPROC_JAR;
 DEFINE getTokens pignlproc.index.LuceneTokenizer('$STOPLIST_PATH', '$STOPLIST_NAME');
 DEFINE textWithLink pignlproc.evaluation.ParagraphsWithLink('$MAX_SPAN_LENGTH');
 DEFINE JsonCompressedStorage pignlproc.storage.JsonCompressedStorage();
-
+DEFINE keepTopN pignlproc.helpers.FirstNtuples('$N');
 -- Parse the wikipedia dump and extract text and links data
 parsed = LOAD '$INPUT'
   USING pignlproc.storage.ParsingWikipediaLoader('$LANG')
@@ -156,11 +157,16 @@ docs_with_weights = FOREACH by_docs GENERATE
 --DESCRIBE docs_with_weights; 
 ordered = FOREACH docs_with_weights {
 	terms = tokens;
-	sorted = ORDER terms by weight desc;
+	sorted = ORDER tokens by weight desc;
 	GENERATE 
 	uri, sorted;	
 };
-STORE ordered INTO '$OUTPUT_DIR/token_counts.json.bz2' USING JsonCompressedStorage();
+
+top100 = FOREACH ordered GENERATE
+	uri,
+	keepTopN(sorted) AS sorted;
+
+STORE top100 INTO '$OUTPUT_DIR/token_counts.json.bz2' USING JsonCompressedStorage();
 --DUMP ordered;
 --DESCRIBE ordered;
 
