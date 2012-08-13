@@ -8,9 +8,13 @@ LANG=en
 MAX_SPAN_LENGTH=5000
 MIN_COUNT=1
 NUM_DOCS=1000
+N=100
 
 # output directory in HDFS
 OUTPUT_DIR=/tmp/output
+
+#Location of the list of URIs to keep
+URI_LIST=/home/chris/projects/pignlproc/src/test/resources/uri_list.txt
 
 # location of the stop word list file in HDFS
 STOPLIST_NAME=stopwords.en.list
