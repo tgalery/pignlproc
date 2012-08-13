@@ -89,7 +89,6 @@ public class LuceneTokenizer extends EvalFunc<DataBag> {
                          + t0.getClass().getName());
          }
 
-        //TODO: test this
         stream = analyzer.reusableTokenStream(field, new StringReader((String)t0));
 
         try {
