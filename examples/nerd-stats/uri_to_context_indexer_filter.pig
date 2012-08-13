@@ -1,7 +1,7 @@
 /*
  * Wikipedia Statistics for Named Entity Recognition and Disambiguation
  *
- * @params $DIR - the directory where the files should be stored
+ * @params $OUTPUT_DIR - the directory where the files should be stored
  *         $INPUT - the wikipedia XML dump
  *         $PIGNLPROC_JAR - the location of the pignlproc jar
  *         $LANG - the language of the Wikidump 
@@ -69,7 +69,7 @@ by_uri = GROUP contexts by uri;
 --	group as uri,
 --	contexts.paragraph as paragraphs;
 --end test
-filtered = FILTER by_uri by COUNT(contexts.uri) > 10;
+filtered = FILTER by_uri by (COUNT(contexts.uri) > 20) AND (COUNT(contexts.uri)<100);
 
 flattened = FOREACH filtered GENERATE
 	group as uri,
@@ -79,7 +79,7 @@ flattened = FOREACH filtered GENERATE
 --ordered = order flattened by uri;
 
 --Now output to .TSV --> Last directory in dir is hard-coded for now
-STORE flattened INTO '$DIR/uri_to_context_filtered.TSV.bz2' USING PigStorage('\t');
+STORE flattened INTO '$OUTPUT_DIR/uri_to_context_filtered.TSV.bz2' USING PigStorage('\t');
 
 --TEST
 --DUMP ordered;
