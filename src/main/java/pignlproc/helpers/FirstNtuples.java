@@ -1,10 +1,7 @@
 package pignlproc.helpers;
 
 import org.apache.pig.EvalFunc;
-import org.apache.pig.data.BagFactory;
-import org.apache.pig.data.DataBag;
-import org.apache.pig.data.DefaultDataBag;
-import org.apache.pig.data.Tuple;
+import org.apache.pig.data.*;
 import org.apache.pig.impl.logicalLayer.schema.Schema;
 
 import java.io.IOException;
@@ -48,6 +45,19 @@ public class FirstNtuples extends EvalFunc<DataBag> {
             out.addAll(allParagraphs);
         }
         return out;
+    }
+
+    public Schema outputSchema(Schema input) {
+        try {
+            Schema tupleSchema = new Schema();
+            tupleSchema.add(new Schema.FieldSchema("token", DataType.CHARARRAY));
+            tupleSchema.add(new Schema.FieldSchema("weight", DataType.DOUBLE));
+            return new Schema(new Schema.FieldSchema(getSchemaName(
+                    this.getClass().getName().toLowerCase(), input),
+                    tupleSchema, DataType.BAG));
+        } catch (Exception e) {
+            return null;
+        }
     }
 
 }
