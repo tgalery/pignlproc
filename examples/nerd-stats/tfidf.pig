@@ -70,7 +70,7 @@ doc_context = FOREACH paragraphs GENERATE
 all_contexts = GROUP doc_context by uri;
 
 size_filter = FILTER all_contexts BY
-		COUNT(doc_context) > 20;
+		COUNT(doc_context) > 10;
 
 --DESCRIBE doc_context;
 --DESCRIBE all_contexts;
@@ -124,11 +124,13 @@ idf = foreach doc_freq GENERATE
 --
 --(3) Term Frequency
 term_freq = GROUP uri_and_token by (uri, token);
-term_counts = FOREACH term_freq GENERATE
+raw_term_counts = FOREACH term_freq GENERATE
 	group.uri as uri,
 	group.token as token,
 	COUNT(uri_and_token) as tf;
---
+
+term_counts = FILTER raw_term_counts BY tf > $MIN_COUNT;
+
 --
 --(4) put the data together
 token_instances = JOIN term_counts BY token, idf by token; 

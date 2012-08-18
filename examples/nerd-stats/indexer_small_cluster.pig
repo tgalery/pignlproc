@@ -1,7 +1,7 @@
 /*
  * Wikipedia Statistics for Named Entity Recognition and Disambiguation
  *
- * @params $DIR - the directory where the files should be stored
+ * @params $OUTPUT_DIR - the directory where the files should be stored
  *         $STOPLIST_PATH - the location of the stoplist in HDFS		
  *         $STOPLIST_NAME - the filename of the stoplist
  *         $INPUT - the wikipedia XML dump
@@ -9,6 +9,7 @@
  *         $PIGNLPROC_JAR - the location of the pignlproc jar
  *         $LANG - the language of the Wikidump 
  *         $MAX_SPAN_LENGTH - the maximum length (in chars) for a paragraph span
+ *         $ANALYZER_NAME - the name of the language specific Lucene Analyzer - i.e. "EnglishAnalyzer"
  */
 
 
@@ -21,8 +22,11 @@ SET job.name 'Wikipedia-Token-Counts-per-URI for $LANG';
 REGISTER $PIGNLPROC_JAR;
 
 -- Define alias for tokenizer function
-DEFINE tokens pignlproc.index.GetCountsLucene('$STOPLIST_PATH', '$STOPLIST_NAME');
+--DEFINE tokens pignlproc.index.GetCountsLucene('$STOPLIST_PATH', '$STOPLIST_NAME','$LANG','$ANALYZER_NAME');
+DEFINE tokens pignlproc.index.GetCountsLucene('$LANG','$ANALYZER_NAME');
+
 DEFINE textWithLink pignlproc.evaluation.ParagraphsWithLink('$MAX_SPAN_LENGTH');
+DEFINE JsonCompressedStorage pignlproc.storage.JsonCompressedStorage();
 
 --------------------
 -- prepare
@@ -76,4 +80,4 @@ freq_sorted = FOREACH contexts {
 	 uri, sorted;
 }
 
-STORE freq_sorted INTO '$DIR/token_counts.JSON.bz2' USING JsonStorage(); 
+STORE freq_sorted INTO '$OUTPUT_DIR/token_counts.JSON.bz2' USING JsonCompressedStorage(); 

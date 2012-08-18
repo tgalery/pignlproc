@@ -70,6 +70,8 @@ public class AnnotatingMarkupParser implements ITextConverter {
     protected static final Map<String, Pattern> REDIRECT_PATTERNS = getRedirectPatterns();
     protected Pattern redirectPattern;
 
+
+    //TODO: fix for compatibility with other languages
     private static Map<String, Pattern> getRedirectPatterns() {
         Map<String, Pattern> m = new HashMap<String, Pattern>();
         m.put("en", Pattern.compile("^#REDIRECT \\[\\[([^\\]]*)\\]\\]"));
@@ -77,6 +79,7 @@ public class AnnotatingMarkupParser implements ITextConverter {
         return m;
     }
 
+    //TODO: fix for compatibility with other languages
     public AnnotatingMarkupParser() {
         this("en");
     }

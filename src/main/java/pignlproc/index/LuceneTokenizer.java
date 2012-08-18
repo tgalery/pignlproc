@@ -11,6 +11,7 @@ import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
 import org.apache.lucene.analysis.tokenattributes.TermAttribute;
 import org.apache.lucene.util.Version;
+import org.apache.lucene.analysis.*;
 
 import org.apache.pig.EvalFunc;
 import org.apache.pig.data.BagFactory;
@@ -25,6 +26,7 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.StringReader;
+import java.lang.invoke.CallSite;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -45,15 +47,24 @@ public class LuceneTokenizer extends EvalFunc<DataBag> {
     //Hard-coded for the Lucene analyzer because this is unnecessary for this implementation
     String field = "paragraph";
 
-    private String stoplist_path; //the path to the stoplist
-    private String stoplist_name; //the name of the stoplist
+    private String stoplist_path = null; //the path to the stoplist
+    private String stoplist_name = null; //the name of the stoplist
+    private String analyzerClassName; //the name of the analyzer to use i.e. "EnglishAnalyzer"
+
+
     private HashSet<String> stopset = null;
     protected Analyzer analyzer;
     private TokenStream stream = null;
 
-    public LuceneTokenizer(String path, String name) throws  IOException {
-        stoplist_path = path;
-        stoplist_name = name;
+    //TODO: get Analyzer name from argument
+    public LuceneTokenizer(String stopPath, String stopName, String langCode, String luceneAnalyzer) throws  IOException {
+        stoplist_path = stopPath;
+        stoplist_name = stopName;
+        analyzerClassName = "org.apache.lucene.analysis." + langCode + "." + luceneAnalyzer;
+    }
+
+    public LuceneTokenizer(String langCode, String luceneAnalyzer) {
+        analyzerClassName = "org.apache.lucene.analysis." + langCode + "." + luceneAnalyzer;
     }
 
     public List<String> getCacheFiles() {
@@ -77,7 +88,16 @@ public class LuceneTokenizer extends EvalFunc<DataBag> {
                 stopset.add(line);
             }
 
-            analyzer = new EnglishAnalyzer(Version.LUCENE_36, stopset);
+            //original
+            //analyzer = new EnglishAnalyzer(Version.LUCENE_36, stopset);
+
+            try {
+                //TODO: fix to work with user-provided stopset
+                analyzer = (Analyzer)Class.forName(analyzerClassName).getConstructor(Version.class).newInstance(Version.LUCENE_36);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
         }
 
         DataBag out = bagFactory.newDefaultBag();

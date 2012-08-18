@@ -10,6 +10,7 @@ import com.google.common.collect.Sets;
 import com.google.common.base.Charsets;
 
 import org.apache.commons.lang.CharSet;
+import org.apache.lucene.analysis.*;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.en.EnglishAnalyzer;
@@ -51,13 +52,20 @@ public class GetCountsLucene extends EvalFunc<DataBag> {
     private HashSet<String> stopset = null;
     protected Analyzer analyzer;
     private TokenStream stream = null;
+    private String analyzerClassName; //the name of the analyzer to use i.e. "org.EnglishAnalyzer"
 
 
-    public GetCountsLucene (String path, String name) throws IOException {
+    public GetCountsLucene (String path, String name, String langCode, String luceneAnalyzer) throws IOException {
         stoplist_path = path;
         stoplist_name = name;
-        //language = lang;
+        analyzerClassName = "org.apache.lucene.analysis." + langCode + "." + luceneAnalyzer;
     }
+
+    public GetCountsLucene (String langCode, String luceneAnalyzer) throws IOException {
+        analyzerClassName = "org.apache.lucene.analysis." + langCode + "." + luceneAnalyzer;
+    }
+
+
 
     public List<String> getCacheFiles() {
         List<String> list = new ArrayList<String>(1);
@@ -82,7 +90,14 @@ public class GetCountsLucene extends EvalFunc<DataBag> {
                    stopset.add(line);
             }
 
-            analyzer = new EnglishAnalyzer(Version.LUCENE_36, stopset);
+            //original
+            //analyzer = new EnglishAnalyzer(Version.LUCENE_36, stopset);
+            try {
+                //TODO: fix to work with user-provided stopset
+                analyzer = (Analyzer)Class.forName(analyzerClassName).getConstructor(Version.class).newInstance(Version.LUCENE_36);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
 
         DataBag out = bagFactory.newDefaultBag();
