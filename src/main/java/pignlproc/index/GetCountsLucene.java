@@ -41,9 +41,6 @@ public class GetCountsLucene extends EvalFunc<DataBag> {
     TupleFactory tupleFactory = TupleFactory.getInstance();
     BagFactory bagFactory = BagFactory.getInstance();
 
-    //TODO: test
-    //String language;
-
     //Hard-coded for the Lucene standard analyzer because this is unnecessary for this implementation
     static final String field = "paragraph";
 
@@ -80,23 +77,24 @@ public class GetCountsLucene extends EvalFunc<DataBag> {
         if (stopset == null)
         {
             if (stoplist_name != null) {
-                //TODO: add try/catch here
-                //uses hadoop distributed cache (via getCacheFiles)
-                FileReader fr = new FileReader("./" + stoplist_name);
+                try {
+                    //uses hadoop distributed cache (via getCacheFiles)
+                    FileReader fr = new FileReader("./" + stoplist_name);
 
-                BufferedReader br = new BufferedReader(fr);
-                String line = null;
-                stopset = new HashSet<String>();
-                while ((line = br.readLine()) != null)
-                {
-                       stopset.add(line);
-                }
+                    BufferedReader br = new BufferedReader(fr);
+                    String line = null;
+                    stopset = new HashSet<String>();
+                    while ((line = br.readLine()) != null)
+                    {
+                           stopset.add(line);
+                    }
+                } catch (FileNotFoundException e) {
+                    //String msg = "Couldn't find the stoplist file: %s".format(stoplist_name);
+                    e.printStackTrace();
+                  }
             }
 
-            //original
-            //analyzer = new EnglishAnalyzer(Version.LUCENE_36, stopset);
             try {
-                //TODO: fix to work with user-provided stopset
                 if (stopset != null) {
                     analyzer = (Analyzer)Class.forName(analyzerClassName).getConstructor(Version.class, Set.class).newInstance(Version.LUCENE_36, stopset);
                 } else {
@@ -121,10 +119,9 @@ public class GetCountsLucene extends EvalFunc<DataBag> {
         //Iterator<Tuple> it = allParagraphs.iterator();
 
         Map <String, Integer> allCounts = new HashMap<String, Integer>();
-        // TODO: this was necessary due to limited space on cluster
+        // this was necessary due to limited space on cluster
 
 
-        //TODO: testing here
         for (Tuple t : allParagraphs)
         {
             //there should be only one item in each tuple

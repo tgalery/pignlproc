@@ -23,7 +23,7 @@ REGISTER $PIGNLPROC_JAR;
 
 -- Define alias for tokenizer function
 --DEFINE tokens pignlproc.index.GetCountsLucene('$STOPLIST_PATH', '$STOPLIST_NAME','$LANG','$ANALYZER_NAME');
-DEFINE tokens pignlproc.index.GetCountsLucene('$LANG','$ANALYZER_NAME');
+DEFINE tokens pignlproc.index.GetCountsLucene('$STOPLIST_PATH','$STOPLIST_NAME','$LANG','$ANALYZER_NAME');
 
 DEFINE textWithLink pignlproc.evaluation.ParagraphsWithLink('$MAX_SPAN_LENGTH');
 DEFINE JsonCompressedStorage pignlproc.storage.JsonCompressedStorage();

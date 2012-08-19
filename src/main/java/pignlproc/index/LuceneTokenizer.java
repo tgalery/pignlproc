@@ -22,10 +22,7 @@ import org.apache.pig.data.TupleFactory;
 import org.apache.pig.impl.logicalLayer.schema.Schema;
 import org.apache.pig.impl.logicalLayer.schema.Schema.FieldSchema;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.StringReader;
+import java.io.*;
 import java.lang.invoke.CallSite;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -47,16 +44,13 @@ public class LuceneTokenizer extends EvalFunc<DataBag> {
     //Hard-coded for the Lucene analyzer because this is unnecessary for this implementation
     String field = "paragraph";
 
-    private String stoplist_path = null; //the path to the stoplist
-    private String stoplist_name = null; //the name of the stoplist
-    private String analyzerClassName; //the name of the analyzer to use i.e. "EnglishAnalyzer"
-
-
+    private String stoplist_path; //the path to the stoplist
+    private String stoplist_name; //the name of the stoplist
     private HashSet<String> stopset = null;
     protected Analyzer analyzer;
     private TokenStream stream = null;
+    private String analyzerClassName; //the name of the analyzer to use i.e. "org.EnglishAnalyzer"
 
-    //TODO: get Analyzer name from argument
     public LuceneTokenizer(String stopPath, String stopName, String langCode, String luceneAnalyzer) throws  IOException {
         stoplist_path = stopPath;
         stoplist_name = stopName;
@@ -76,28 +70,33 @@ public class LuceneTokenizer extends EvalFunc<DataBag> {
     @Override
     public DataBag exec(Tuple input) throws IOException {
 
-        if (stopset == null)
-        {
-            //uses hadoop distributed cache (via getCacheFiles)
-            FileReader fr = new FileReader("./" + stoplist_name);
-            stopset = new HashSet<String>();
-            BufferedReader br = new BufferedReader(fr);
-            String line = null;
-            while ((line = br.readLine()) != null)
-            {
-                stopset.add(line);
-            }
-
-            //original
-            //analyzer = new EnglishAnalyzer(Version.LUCENE_36, stopset);
-
+        if (stoplist_name != null) {
             try {
-                //TODO: fix to work with user-provided stopset
-                analyzer = (Analyzer)Class.forName(analyzerClassName).getConstructor(Version.class).newInstance(Version.LUCENE_36);
-            } catch (Exception e) {
+                //uses hadoop distributed cache (via getCacheFiles)
+                FileReader fr = new FileReader("./" + stoplist_name);
+
+                BufferedReader br = new BufferedReader(fr);
+                String line = null;
+                stopset = new HashSet<String>();
+                while ((line = br.readLine()) != null)
+                {
+                    stopset.add(line);
+                }
+            } catch (FileNotFoundException e) {
+                //String msg = "Couldn't find the stoplist file: %s".format(stoplist_name);
                 e.printStackTrace();
             }
+        }
 
+        try {
+            if (stopset != null) {
+                analyzer = (Analyzer)Class.forName(analyzerClassName).getConstructor(Version.class, Set.class).newInstance(Version.LUCENE_36, stopset);
+            } else {
+                analyzer = (Analyzer)Class.forName(analyzerClassName).getConstructor(Version.class).newInstance(Version.LUCENE_36);
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
         }
 
         DataBag out = bagFactory.newDefaultBag();
