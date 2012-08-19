@@ -76,6 +76,7 @@ public class AnnotatingMarkupParser implements ITextConverter {
         Map<String, Pattern> m = new HashMap<String, Pattern>();
         m.put("en", Pattern.compile("^#REDIRECT \\[\\[([^\\]]*)\\]\\]"));
         m.put("de", Pattern.compile("^(?:#WEITERLEITUNG|#REDIRECT) \\[\\[([^\\]]*)\\]\\]"));
+        m.put("fr", Pattern.compile("^(?:#REDIRECTION|#REDIRECT) \\[\\[([^\\]]*)\\]\\]"));
         return m;
     }
 

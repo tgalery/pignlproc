@@ -79,22 +79,30 @@ public class GetCountsLucene extends EvalFunc<DataBag> {
 
         if (stopset == null)
         {
-            //uses hadoop distributed cache (via getCacheFiles)
-            FileReader fr = new FileReader("./" + stoplist_name);
+            if (stoplist_name != null) {
+                //TODO: add try/catch here
+                //uses hadoop distributed cache (via getCacheFiles)
+                FileReader fr = new FileReader("./" + stoplist_name);
 
-            BufferedReader br = new BufferedReader(fr);
-            String line = null;
-            stopset = new HashSet<String>();
-            while ((line = br.readLine()) != null)
-            {
-                   stopset.add(line);
+                BufferedReader br = new BufferedReader(fr);
+                String line = null;
+                stopset = new HashSet<String>();
+                while ((line = br.readLine()) != null)
+                {
+                       stopset.add(line);
+                }
             }
 
             //original
             //analyzer = new EnglishAnalyzer(Version.LUCENE_36, stopset);
             try {
                 //TODO: fix to work with user-provided stopset
-                analyzer = (Analyzer)Class.forName(analyzerClassName).getConstructor(Version.class).newInstance(Version.LUCENE_36);
+                if (stopset != null) {
+                    analyzer = (Analyzer)Class.forName(analyzerClassName).getConstructor(Version.class, Set.class).newInstance(Version.LUCENE_36, stopset);
+                } else {
+                    analyzer = (Analyzer)Class.forName(analyzerClassName).getConstructor(Version.class).newInstance(Version.LUCENE_36);
+                }
+
             } catch (Exception e) {
                 e.printStackTrace();
             }

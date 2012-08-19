@@ -11,9 +11,10 @@ NUM_DOCS=1000
 N=100
 
 #Lucene Analyzer to use (language-specific)
-#ANALYZER_NAME=EnglishAnalyzer
-LANG=de
-ANALYZER_NAME=GermanAnalyzer
+LANG=en
+ANALYZER_NAME=EnglishAnalyzer
+#LANG=fr
+#ANALYZER_NAME=FrenchAnalyzer
 
 # output directory in HDFS
 OUTPUT_DIR=/tmp/output
