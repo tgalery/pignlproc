@@ -64,11 +64,6 @@ contexts = FOREACH filtered GENERATE
 
 by_uri = GROUP contexts by uri;
 
---TEST - old code
---flattened = FOREACH by_uri GENERATE
---	group as uri,
---	contexts.paragraph as paragraphs;
---end test
 filtered = FILTER by_uri by (COUNT(contexts.uri) > 20) AND (COUNT(contexts.uri)<100);
 
 flattened = FOREACH filtered GENERATE
@@ -80,14 +75,4 @@ flattened = FOREACH filtered GENERATE
 
 --Now output to .TSV --> Last directory in dir is hard-coded for now
 STORE flattened INTO '$OUTPUT_DIR/uri_to_context_filtered.TSV.bz2' USING PigStorage('\t');
-
---TEST
---DUMP ordered;
---DESCRIBE ordered;
-
---TEST
---DUMP ordered;
---DESCRIBE ordered;
--- end test
-
 
