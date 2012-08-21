@@ -2,7 +2,6 @@
 # input: (uncompressed??) Wikipedia XML dump
 #INPUT=/home/chris/projects/pignlproc/src/test/resources/enwiki-latest-pages-articles-1000.xml
 INPUT=/user/hadoop/wikidump/20120601/enwiki-20120601-pages-articles.xml
-LANG=en
 
 #Configuration
 MAX_SPAN_LENGTH=5000
@@ -10,6 +9,12 @@ MIN_COUNT=5
 N=150
 #this constant is chosen based upon the reported number of DBpediaResources
 NUM_DOCS=1000000
+
+#Lucene Analyzer to use (language-specific)
+LANG=en
+ANALYZER_NAME=EnglishAnalyzer
+#LANG=fr
+#ANALYZER_NAME=FrenchAnalyzer
 
 # output directory in HDFS
 OUTPUT_DIR=/user/hadoop/output/top150-filter5-20120601
