@@ -64,7 +64,9 @@ contexts = FOREACH paragraphs GENERATE
 -- this is reduce #1
 by_uri = GROUP contexts by uri;
 
-paragraph_bag = FOREACH by_uri GENERATE
+min_contexts = FILTER by_uri BY (COUNT(contexts) >=$MIN_CONTEXTS);
+
+paragraph_bag = FOREACH min_contexts GENERATE
 	group as uri, contexts.paragraph as paragraphs;
 
 --TOKENIZE, REMOVE STOPWORDS AND COUNT HERE
@@ -80,4 +82,4 @@ freq_sorted = FOREACH contexts {
 	 uri, sorted;
 }
 
-STORE freq_sorted INTO '$OUTPUT_DIR/token_counts.JSON.bz2' USING JsonCompressedStorage(); 
+STORE freq_sorted INTO '$OUTPUT_DIR/token_counts.JSON.bz2' USING PigStorage('\t'); 

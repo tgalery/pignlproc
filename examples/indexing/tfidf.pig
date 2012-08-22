@@ -19,8 +19,8 @@
 SET default_parallel 15;
 
 SET job.name 'Wikipedia-Token-Counts-per-URI for $LANG';
-SET mapred.compress.map.output 'true';
-SET mapred.map.output.compression.codec 'org.apache.hadoop.io.compress.GzipCodec';
+--SET mapred.compress.map.output 'true';
+--SET mapred.map.output.compression.codec 'org.apache.hadoop.io.compress.GzipCodec';
 -- Register the project jar to use the custom loaders and UDFs
 REGISTER $PIGNLPROC_JAR;
 
@@ -67,7 +67,7 @@ all_contexts = GROUP doc_context by uri;
 
 --added relation here to filter by number of contexts
 size_filter = FILTER all_contexts BY
-		COUNT(doc_context) >= 2;
+		COUNT(doc_context) >= 1;
 
 flattened_context = FOREACH size_filter {
 	contexts = doc_context.context;
@@ -126,7 +126,6 @@ docs_with_weights = FOREACH by_docs GENERATE
 	tfidf.(token,weight) as tokens; 
 
 ordered = FOREACH docs_with_weights {
-	terms = tokens;
 	sorted = ORDER tokens by weight desc;
 	GENERATE 
 	uri, sorted;	
