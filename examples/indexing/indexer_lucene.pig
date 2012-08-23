@@ -84,7 +84,7 @@ counts = FOREACH by_uri_all_tokens {
 }
 
 --Now output to .TSV --> Last directory in dir is hard-coded for now
-STORE counts INTO '$DIR/token_counts_big_cluster.TSV.bz2' USING PigStorage();
+STORE counts INTO '$OUTPUT_DIR/token_counts_big_cluster.TSV.bz2' USING PigStorage();
 
 --TEST
 --DUMP counts;
