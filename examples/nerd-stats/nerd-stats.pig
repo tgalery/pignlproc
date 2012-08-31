@@ -16,6 +16,10 @@ TODO think about efficiency:
 
 SET job.name 'Wikipedia-NERD-Stats for $LANG'
 
+-- enable compression of intermediate results --TODO how much does performance suffer?
+SET pig.tmpfilecompression true;
+SET pig.tmpfilecompression.codec gz;
+
 -- Register the project jar to use the custom loaders and UDFs
 REGISTER $PIGNLPROC_JAR
 
