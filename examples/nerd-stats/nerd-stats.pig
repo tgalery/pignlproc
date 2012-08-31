@@ -2,17 +2,8 @@
  * Wikipedia Statistics for Named Entity Recognition and Disambiguation
  */
 
-/*
-TODO think about efficiency:
- - add replicated/merge/skewed(only for inner) option to JOIN operations?
- - accumulator / algebraic interfaces apply?
- - pig.cachedbag.memusage, pig.skewed.join.reduce.memusage
- - compression of intermediates (LZO)
- - in pignlproc.evaluation.SentencesWithLink
-   - we don't need the paragraphs
-   - we don't need the sentences and the sentence indexes
- - Pig 0.9 supports macros. They could help make the script more readable (esp. redirect resolution)
-*/
+-- TODO use macros (Pig > 0.9) to make the script more readable (esp. redirect resolution)
+
 
 SET job.name 'Wikipedia-NERD-Stats for $LANG'
 
@@ -52,9 +43,11 @@ ids = FOREACH parsedNonRedirects GENERATE
 -- Load Redirects and build transitive closure
 -- (resolve recursively) in 2 iterations
 r1a = FOREACH parsedRedirects GENERATE
+  title AS source1aTitle,
   pageUrl AS source1a,
   redirect AS target1a;
 r1b = FOREACH r1a GENERATE
+  source1aTitle AS source1bTitle,
   source1a AS source1b,
   target1a AS target1b;
 r1join = JOIN
@@ -62,16 +55,19 @@ r1join = JOIN
   r1b BY source1b;
 
 r2a = FOREACH r1join GENERATE
+  source1aTitle AS source2aTitle,
   source1a AS source2a,
   flatten(resolve(target1a, target1b)) AS target2a;
 r2b = FOREACH r2a GENERATE
+  source2aTitle AS source2bTitle,
   source2a AS source2b,
   target2a AS target2b;
 r2join = JOIN
   r2a BY target2a LEFT,
   r2b BY source2b;
 
-redirects = FOREACH r2join GENERATE 
+redirects = FOREACH r2join GENERATE
+  source2aTitle AS redirectSourceTitle,
   source2a AS redirectSource,
   FLATTEN(resolve(target2a, target2b)) AS redirectTarget;
 
@@ -122,9 +118,18 @@ pageNgrams = FOREACH articles GENERATE
 doubledLinks = JOIN
   distinctLinks BY (pageUrl, surfaceForm) LEFT,
   pageNgrams BY (pageUrl, ngram);
-pairs = FOREACH doubledLinks GENERATE
+
+pairsFromLinks = FOREACH doubledLinks GENERATE
   surfaceForm,
   uri;
+
+pairsFromRedirects = FOREACH redirects GENERATE
+  redirectSourceTitle AS surfaceForm,
+  redirectTarget AS uri;
+
+pairs = UNION ONSCHEMA
+  pairsFromRedirects,
+  pairsFromLinks;
 
 
 --------------------
