@@ -44,8 +44,8 @@ public class GetCountsLucene extends EvalFunc<DataBag> {
     //Hard-coded for the Lucene standard analyzer because this is unnecessary for this implementation
     static final String field = "paragraph";
 
-    private String stoplist_path; //the path to the stoplist
-    private String stoplist_name; //the name of the stoplist
+    private String stoplist_path = null; //the path to the stoplist
+    private String stoplist_name = null; //the name of the stoplist
     private HashSet<String> stopset = null;
     protected Analyzer analyzer;
     private TokenStream stream = null;
