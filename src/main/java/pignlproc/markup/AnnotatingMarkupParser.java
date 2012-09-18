@@ -77,10 +77,12 @@ public class AnnotatingMarkupParser implements ITextConverter {
         m.put("en", Pattern.compile("^#REDIRECT \\[\\[([^\\]]*)\\]\\]"));
         m.put("de", Pattern.compile("^(?:#WEITERLEITUNG|#REDIRECT) \\[\\[([^\\]]*)\\]\\]"));
         m.put("fr", Pattern.compile("^(?:#REDIRECTION|#REDIRECT) \\[\\[([^\\]]*)\\]\\]"));
+        m.put("es", Pattern.compile("^(?:#REDIRECCIÓN|#REDIRECT) \\[\\[([^\\]]*)\\]\\]"));
+        m.put("pt", Pattern.compile("^(?:#REDIRECIONAMENTO|#REDIRECT) \\[\\[([^\\]]*)\\]\\]"));
         return m;
     }
 
-    //TODO: fix for compatibility with other languages
+    //TODO: fix for compatibility with other languages (assume English)
     public AnnotatingMarkupParser() {
         this("en");
     }

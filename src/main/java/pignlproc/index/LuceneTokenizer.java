@@ -44,8 +44,11 @@ public class LuceneTokenizer extends EvalFunc<DataBag> {
     //Hard-coded for the Lucene analyzer because this is unnecessary for this implementation
     String field = "paragraph";
 
-    private String stoplist_path = null; //the path to the stoplist
-    private String stoplist_name = null; //the name of the stoplist
+    private String stoplist_path = ""; //the path to the stoplist
+    private String stoplist_name = ""; //the name of the stoplist
+
+    private Boolean hasStoplist = false;
+
     private HashSet<String> stopset = null;
     protected Analyzer analyzer;
     private TokenStream stream = null;
@@ -54,6 +57,7 @@ public class LuceneTokenizer extends EvalFunc<DataBag> {
     public LuceneTokenizer(String stopPath, String stopName, String langCode, String luceneAnalyzer) throws  IOException {
         stoplist_path = stopPath;
         stoplist_name = stopName;
+        hasStoplist = true;
         analyzerClassName = "org.apache.lucene.analysis." + langCode + "." + luceneAnalyzer;
     }
 
@@ -70,7 +74,7 @@ public class LuceneTokenizer extends EvalFunc<DataBag> {
     @Override
     public DataBag exec(Tuple input) throws IOException {
 
-        if (stoplist_name != null) {
+        if (hasStoplist == true) {
             try {
                 //uses hadoop distributed cache (via getCacheFiles)
                 FileReader fr = new FileReader("./" + stoplist_name);
