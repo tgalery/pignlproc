@@ -37,7 +37,6 @@ parsed = LOAD '$INPUT'
   USING pignlproc.storage.ParsingWikipediaLoader('$LANG')
   AS (title, id, pageUrl, text, redirect, links, headers, paragraphs);
 
-
 -- filter as early as possible
 SPLIT parsed INTO
   parsedRedirects IF redirect IS NOT NULL,
@@ -50,6 +49,9 @@ articles = FOREACH parsedNonRedirects GENERATE
   links,
   paragraphs;
 
+-- the next relation is created in order to get the global doc count
+grouped = GROUP articles ALL;
+
 -- Extract paragraph contexts of the links 
 paragraphs = FOREACH articles GENERATE
   pageUrl,
@@ -60,7 +62,7 @@ paragraphs = FOREACH articles GENERATE
 -- BEGIN TFIDF --
 -----------------
 doc_context = FOREACH paragraphs GENERATE
-        targetUri AS uri,
+	REGEX_EXTRACT(targetUri, '(.*)/(.*)', 2) AS uri,
         getTokens(paragraph) AS context;
 
 all_contexts = GROUP doc_context by uri;
@@ -80,8 +82,6 @@ uri_and_token = FOREACH flattened_context GENERATE
 	uri,
 	FLATTEN(context) AS token;
 
---TODO - consider tf normalization - i.e. tf/|tokens|
-
 -- (2) group by token and Unique Doc to get global doc frequency
 unique = DISTINCT uri_and_token;
 
@@ -94,11 +94,14 @@ raw_doc_freq = FOREACH docs_by_tokens GENERATE
 doc_freq = FILTER raw_doc_freq BY df > $MIN_COUNT;
 
 --NUM_DOCS should be the total number of RESOURCES
-idf = foreach doc_freq GENERATE
+raw_idf = foreach doc_freq {
+	numDocs = COUNT(grouped.articles);	
+        GENERATE
 	token,
-	LOG((double)$NUM_DOCS/(double)df) AS idf: double;
---ordered = order doc_freq BY df desc;
---STORE ordered into '$OUTPUT_DIR/doc-frquency.json.bz2' USING JsonCompressedStorage;
+	LOG((double)numDocs/(double)df) AS idf: double;
+};
+
+idf = FILTER raw_idf BY (idf > 0);
 
 --(3) Term Frequency
 term_freq = GROUP uri_and_token by (uri, token);
@@ -131,8 +134,10 @@ ordered = FOREACH docs_with_weights {
 	uri, sorted;	
 };
 
-top = FOREACH ordered GENERATE
-	uri,
-	keepTopN(sorted) AS sorted;
+--top = FOREACH ordered GENERATE
+--	uri,
+--	keepTopN(sorted) AS sorted;
 
-STORE top INTO '$OUTPUT_DIR/tfidf_token_weights.json.bz2' USING JsonCompressedStorage();
+--STORE top INTO '$OUTPUT_DIR/$LANG.tfidf_token_weights.json.bz2' USING JsonCompressedStorage();
+STORE ordered INTO '$OUTPUT_DIR/$LANG.tfidf_token_weights.tsv' USING PigStorage('\t','-schema');
+

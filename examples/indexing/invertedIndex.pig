@@ -24,9 +24,9 @@ SET job.name 'Wikipedia-Token-Counts-per-URI for $LANG';
 REGISTER $PIGNLPROC_JAR;
 
 -- Define aliases
---DEFINE getTokens pignlproc.index.LuceneTokenizer('$STOPLIST_PATH', '$STOPLIST_NAME', '$LANG', '$ANALYZER_NAME');
+DEFINE getTokens pignlproc.index.LuceneTokenizer('$STOPLIST_PATH', '$STOPLIST_NAME', '$LANG', '$ANALYZER_NAME');
 --uncomment above and comment below to use default stoplist for the analyzer
-DEFINE getTokens pignlproc.index.LuceneTokenizer('$LANG', '$ANALYZER_NAME');
+--DEFINE getTokens pignlproc.index.LuceneTokenizer('$LANG', '$ANALYZER_NAME');
 DEFINE textWithLink pignlproc.evaluation.ParagraphsWithLink('$MAX_SPAN_LENGTH');
 DEFINE JsonCompressedStorage pignlproc.storage.JsonCompressedStorage();
 
@@ -48,19 +48,22 @@ articles = FOREACH parsedNonRedirects GENERATE
   links,
   paragraphs;
 
+-- the next relation is created in order to get the global doc count
+grouped = GROUP articles ALL;
+
 -- Extract paragraph contexts of the links 
 paragraphs = FOREACH articles GENERATE
   pageUrl,
   FLATTEN(textWithLink(text, links, paragraphs))
   AS (paragraphIdx, paragraph, targetUri, startPos, endPos);
-
+--DESCRIBE paragraphs;
 -----------------
 -- BEGIN TFIDF --
 -----------------
 doc_context = FOREACH paragraphs GENERATE
-        targetUri AS uri,
+        REGEX_EXTRACT(targetUri, '(.*)/(.*)', 2) AS uri,
         getTokens(paragraph) AS context;
-
+--DESCRIBE doc_context;
 all_contexts = GROUP doc_context by uri;
 
 --added relation here to filter by number of contexts
@@ -73,30 +76,42 @@ flattened_context = FOREACH size_filter {
         group AS uri,
         FLATTEN(contexts) AS context;
 };
-
+-- this works: DUMP flattened_context;
+--DESCRIBE flattened_context;
 uri_and_token = FOREACH flattened_context GENERATE
         uri,
         FLATTEN(context) AS token;
-
+--DUMP uri_and_token;
 --TODO - consider tf normalization - i.e. tf/|tokens|
 
 -- (2) group by token and Unique Doc to get global doc frequency
 unique = DISTINCT uri_and_token;
-
-docs_by_tokens = group unique by token;
-
+--DUMP unique;
+docs_by_tokens = GROUP unique by token;
+--DUMP docs_by_tokens;
 doc_freq = FOREACH docs_by_tokens GENERATE
         group AS token,
-        COUNT(unique) as df;
-
+	COUNT(unique) as df;
+--	COUNT(grouped.articles) AS numDocs;
+--	unique.$1.numDocs as numDocs;
+--DESCRIBE doc_freq;
+--DUMP doc_freq;
 --doc_freq = FILTER raw_doc_freq BY df > $MIN_COUNT;
 
 --NUM_DOCS should be the total number of RESOURCES
-idf = foreach doc_freq GENERATE
+raw_idf = FOREACH doc_freq {
+	numDocs = COUNT(grouped.articles);
+        GENERATE
         token,
-        LOG((double)$NUM_DOCS/(double)df) AS idf: double;
+        LOG((double)numDocs/(double)df) AS idf: double;
+--	LOG((double)numDocs/(double)df) AS idf: double;
+};
+
+idf = FILTER raw_idf BY (idf > 0);
+
+--DUMP idf;
 --ordered = order doc_freq BY df desc;
---STORE ordered into '$OUTPUT_DIR/doc-frquency.json.bz2' USING JsonCompressedStorage;
+--STORE idf into '$OUTPUT_DIR/doc-frequency.json.bz2' USING JsonCompressedStorage;
 
 --(3) Term Frequency
 term_freq = GROUP uri_and_token by (uri, token);
@@ -110,7 +125,7 @@ term_counts = FOREACH term_freq GENERATE
 --(4) put the data together
 token_instances = JOIN term_counts BY token, idf by token;
 
---(5) calculate tfidf using $NUM_DOCS - note that the user must know how many RESOURCES there are, not how many docs
+--(5) calculate tfidf
 tfidf = FOREACH token_instances {
         tf_idf = (double)term_counts::tf*(double)idf::idf;
                 GENERATE
@@ -134,5 +149,6 @@ ordered = FOREACH docs_with_weights {
 --        uri,
 --        keepTopN(sorted) AS sorted;
 
-STORE ordered INTO '$OUTPUT_DIR/tfidf_inverted_index.json.bz2' USING JsonCompressedStorage();
+--STORE ordered INTO '$OUTPUT_DIR/tfidf_inverted_index.json.bz2' USING JsonCompressedStorage();i
+STORE ordered INTO '$OUTPUT_DIR/$LANG.tfidf_inverted_index.tsv.bz2' USING PigStorage('\t','-schema');
 
