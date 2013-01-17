@@ -115,6 +115,7 @@ sfs = UNION ONSCHEMA
    (FOREACH pairsFromRedirects GENERATE surfaceForm as sf);
 
 STORE sfs INTO '$OUTPUT/sfs';
+STORE sfs INTO '$TEMPORARY_SF_LOCATION/sfs';
 
 -- Define Ngram generator with maximum Ngram length
 DEFINE ngramGenerator pignlproc.helpers.RestrictedNGramGenerator('$MAX_NGRAM_LENGTH', '$OUTPUT/sfs');

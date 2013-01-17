@@ -76,7 +76,7 @@ public class RestrictedNGramGenerator extends EvalFunc<DataBag> {
     public DataBag exec(Tuple input) throws IOException {
 
         if (surfaceFormLookup.size() == 0) {
-            File folder = new File("sfs");
+            File folder = new File("./sfs");
             for (final File fileEntry: folder.listFiles()) {
                 if (fileEntry.getName().startsWith("part-")) {
                     FileReader fr = new FileReader(fileEntry);
