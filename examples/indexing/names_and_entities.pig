@@ -2,16 +2,17 @@
  * Wikipedia Statistics for Named Entity Recognition and Disambiguation
  */
 
+-- IMPORTANT: Run this script with "pig -no_multiquery", otherwise the surface forms
+-- that are passed to the distributed cache are not available in $TEMPORARY_SF_LOCATION
+-- before they are required by pignlproc.helpers.RestrictedNGramGenerator.
+
 -- TODO use macros (Pig > 0.9) to make the script more readable (esp. redirect resolution)
 
 
-SET job.name 'Wikipedia-NERD-Stats for $LANG'
+SET job.name 'DBpedia Spotlight: Names and entities for $LANG'
 
 -- enable compression of intermediate results --TODO how much does performance suffer?
 set io.sort.mb 1024
-SET pig.tmpfilecompression true;
-SET pig.tmpfilecompression.codec gz;
-SET DEFAULT_PARALLEL 6;
 
 -- Register the project jar to use the custom loaders and UDFs
 REGISTER $PIGNLPROC_JAR
@@ -119,8 +120,6 @@ STORE sfs INTO '$TEMPORARY_SF_LOCATION/sfs';
 
 -- Define Ngram generator with maximum Ngram length
 DEFINE ngramGenerator pignlproc.helpers.RestrictedNGramGenerator('$MAX_NGRAM_LENGTH', '$OUTPUT/sfs');
-
-EXEC;
 
 -- Make Ngrams (filter to only include ngrams that are also surfaceforms)
 pageNgrams = FOREACH articles GENERATE FLATTEN( ngramGenerator(text) ) AS ngram, pageUrl;

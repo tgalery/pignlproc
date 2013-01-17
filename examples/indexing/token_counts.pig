@@ -16,7 +16,7 @@
 -- TEST: set parallelism level for reducers
 SET default_parallel 15;
 
-SET job.name 'Wikipedia-Token-Counts-per-URI for $LANG';
+SET job.name 'DBpedia Spotlight: Token counts per URI for $LANG'
 
 -- Register the project jar to use the custom loaders and UDFs
 REGISTER $PIGNLPROC_JAR;
