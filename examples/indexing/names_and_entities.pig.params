@@ -5,10 +5,10 @@ DEFAULT_PARALLEL=6
 
 LANG=nl
 
-INPUT=nlwiki-latest-pages-articles.xml
-OUTPUT=hdfs:///user/hduser/nl/names_and_entities
+INPUT=%LANGwiki-latest-pages-articles.xml
+OUTPUT=hdfs:///user/hduser/%LANG/names_and_entities
 
-TEMPORARY_SF_LOCATION=hdfs:///user/hduser/nl/sf_lookup
+TEMPORARY_SF_LOCATION=hdfs:///user/hduser/%LANG/sf_lookup
 
 
 # NERD STATS
