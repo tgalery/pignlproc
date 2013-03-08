@@ -16,13 +16,13 @@ LANG=%LANG
 ANALYZER_NAME=DutchAnalyzer
 
 # output directory in HDFS
-OUTPUT_DIR=/user/hduser/%LANG_tokencounts
+OUTPUT_DIR=/user/hadoop/%LANG_tokencounts
 
 #Location of the Uri list for filtering
 #URI_LIST=/user/hadoop/input/milne_uri_list.txt
 
 # location of the stop word list file in HDFS
-STOPLIST_PATH=/user/hduser/
+STOPLIST_PATH=/user/hadoop/
 STOPLIST_NAME=stopwords.%LANG.list
 # local path to JAR containing UDFs
 
