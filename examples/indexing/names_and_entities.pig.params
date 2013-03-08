@@ -6,9 +6,9 @@ DEFAULT_PARALLEL=6
 LANG=nl
 
 INPUT=%LANGwiki-latest-pages-articles.xml
-OUTPUT=hdfs:///user/hduser/%LANG/names_and_entities
+OUTPUT=hdfs:///user/hadoop/%LANG/names_and_entities
 
-TEMPORARY_SF_LOCATION=hdfs:///user/hduser/%LANG/sf_lookup
+TEMPORARY_SF_LOCATION=hdfs:///user/hadoop/%LANG/sf_lookup
 
 
 # NERD STATS
