@@ -1,4 +1,4 @@
-PIGNLPROC_JAR=/home/jodaiber/Desktop/spotlight-nl/src/pignlproc2/target/pignlproc-0.1.0-SNAPSHOT.jar
+PIGNLPROC_JAR=%PIG_PATH/target/pignlproc-0.1.0-SNAPSHOT.jar
 
 # number of reducers
 DEFAULT_PARALLEL=6
