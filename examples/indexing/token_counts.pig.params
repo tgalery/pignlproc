@@ -1,6 +1,6 @@
 #Default params for running indexing using Pignlproc scripts
 # input: (uncompressed??) Wikipedia XML dump
-INPUT=%LANGwiki-latest-pages-articles.xml
+INPUT=/user/hadoop/%LANGwiki-latest-pages-articles.xml
 
 #Configuration
 MAX_SPAN_LENGTH=5000
