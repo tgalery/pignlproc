@@ -82,4 +82,4 @@ freq_sorted = FOREACH contexts {
 	 uri, sorted;
 }
 
-STORE freq_sorted INTO '$OUTPUT_DIR/token_counts.JSON.bz2' USING PigStorage('\t'); 
+STORE freq_sorted INTO '$OUTPUT_DIR' USING PigStorage('\t');
