@@ -18,23 +18,21 @@ package pignlproc.helpers;
  * limitations under the License.
  */
 
-import opennlp.tools.tokenize.SimpleTokenizer;
-import opennlp.tools.tokenize.Tokenizer;
 import opennlp.tools.util.Span;
 import org.apache.pig.EvalFunc;
 import org.apache.pig.FuncSpec;
 import org.apache.pig.data.*;
 import org.apache.pig.impl.logicalLayer.FrontendException;
 import org.apache.pig.impl.logicalLayer.schema.Schema;
+import org.dbpedia.spotlight.db.model.RawTokenizer;
+import org.dbpedia.spotlight.db.model.Stemmer;
+import org.dbpedia.spotlight.db.tokenize.LanguageIndependentRawTokenizer;
 
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 
 /**
@@ -47,7 +45,7 @@ public class RestrictedNGramGenerator extends EvalFunc<DataBag> {
 
     private int ngramSizeLimit;
 
-    private final Tokenizer tokenizer = SimpleTokenizer.INSTANCE;
+    private RawTokenizer tokenizer;
 
     private final BagFactory bagFactory = DefaultBagFactory.getInstance();
     private final TupleFactory tupleFactory = TupleFactory.getInstance();
@@ -56,14 +54,17 @@ public class RestrictedNGramGenerator extends EvalFunc<DataBag> {
     private String surfaceFormListFile;
 
 
-    public RestrictedNGramGenerator(int ngramSizeLimit, String surfaceFormListFile) {
+    public RestrictedNGramGenerator(int ngramSizeLimit, String surfaceFormListFile, String locale) {
         this.ngramSizeLimit = ngramSizeLimit;
         this.surfaceFormListFile = surfaceFormListFile;
+
+        String[] localeA = locale.split("_");
+        this.tokenizer = new LanguageIndependentRawTokenizer(new Locale(localeA[0], localeA[1]), new Stemmer());
     }
 
     // Pig versions < 0.9 seem to only pass strings in constructor
-    public RestrictedNGramGenerator(String ngramSizeLimit, String surfaceFormListFile) {
-        this(Integer.valueOf(ngramSizeLimit), surfaceFormListFile);
+    public RestrictedNGramGenerator(String ngramSizeLimit, String surfaceFormListFile, String locale) {
+        this(Integer.valueOf(ngramSizeLimit), surfaceFormListFile, locale);
     }
 
     public List<String> getCacheFiles() {

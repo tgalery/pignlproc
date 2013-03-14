@@ -118,7 +118,7 @@ sfs = UNION ONSCHEMA
 STORE sfs INTO '$TEMPORARY_SF_LOCATION/sfs';
 
 -- Define Ngram generator with maximum Ngram length
-DEFINE ngramGenerator pignlproc.helpers.RestrictedNGramGenerator('$MAX_NGRAM_LENGTH', '$TEMPORARY_SF_LOCATION/sfs');
+DEFINE ngramGenerator pignlproc.helpers.RestrictedNGramGenerator('$MAX_NGRAM_LENGTH', '$TEMPORARY_SF_LOCATION/sfs', '$LOCALE');
 
 EXEC;
 
