@@ -28,6 +28,9 @@ DEFINE tokens pignlproc.index.GetCountsLucene('$STOPLIST_PATH','$STOPLIST_NAME',
 DEFINE textWithLink pignlproc.evaluation.ParagraphsWithLink('$MAX_SPAN_LENGTH');
 DEFINE JsonCompressedStorage pignlproc.storage.JsonCompressedStorage();
 
+SET pig.tmpfilecompression true;
+SET pig.tmpfilecompression.codec gz;
+
 --------------------
 -- prepare
 --------------------

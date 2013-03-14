@@ -14,6 +14,10 @@ SET job.name 'DBpedia Spotlight: Names and entities for $LANG'
 -- enable compression of intermediate results --TODO how much does performance suffer?
 set io.sort.mb 1024
 
+SET pig.tmpfilecompression true;
+SET pig.tmpfilecompression.codec gz;
+
+
 -- Register the project jar to use the custom loaders and UDFs
 REGISTER $PIGNLPROC_JAR
 
