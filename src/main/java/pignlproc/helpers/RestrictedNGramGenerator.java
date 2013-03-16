@@ -24,9 +24,9 @@ import org.apache.pig.FuncSpec;
 import org.apache.pig.data.*;
 import org.apache.pig.impl.logicalLayer.FrontendException;
 import org.apache.pig.impl.logicalLayer.schema.Schema;
-import org.dbpedia.spotlight.db.model.RawTokenizer;
+import org.dbpedia.spotlight.db.model.StringTokenizer;
 import org.dbpedia.spotlight.db.model.Stemmer;
-import org.dbpedia.spotlight.db.tokenize.LanguageIndependentRawTokenizer;
+import org.dbpedia.spotlight.db.tokenize.LanguageIndependentStringTokenizer;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -45,7 +45,7 @@ public class RestrictedNGramGenerator extends EvalFunc<DataBag> {
 
     private int ngramSizeLimit;
 
-    private RawTokenizer tokenizer;
+    private StringTokenizer tokenizer;
 
     private final BagFactory bagFactory = DefaultBagFactory.getInstance();
     private final TupleFactory tupleFactory = TupleFactory.getInstance();
@@ -59,7 +59,7 @@ public class RestrictedNGramGenerator extends EvalFunc<DataBag> {
         this.surfaceFormListFile = surfaceFormListFile;
 
         String[] localeA = locale.split("_");
-        this.tokenizer = new LanguageIndependentRawTokenizer(new Locale(localeA[0], localeA[1]), new Stemmer());
+        this.tokenizer = new LanguageIndependentStringTokenizer(new Locale(localeA[0], localeA[1]), new Stemmer());
     }
 
     // Pig versions < 0.9 seem to only pass strings in constructor
