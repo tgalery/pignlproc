@@ -10,18 +10,18 @@ Author: Joachim Daiber
 from __future__ import division
 import fileinput
 import argparse, sys
+import random 
 from argparse import RawTextHelpFormatter
 
 parser = argparse.ArgumentParser(description=__doc__,
         formatter_class=RawTextHelpFormatter)
 
-parser.add_argument('test_size', type=float, help='size of the test portion in percent')
+parser.add_argument('test_size', type=int, help='size of the test portion in paragraphs')
 parser.add_argument('test_out', help='target file of the test portion')
 args = parser.parse_args()
 
 test = open(args.test_out, "w")
 in_text = False
-p      = 0
 p_test = 0
 
 for line in sys.stdin:
@@ -31,13 +31,12 @@ for line in sys.stdin:
     if line.endswith("</text>\n"):
         in_text = False
 
-    if in_text and line[0] not in "[{}|=# *&!-\n" and "[[" in line and len(line) > 80:
-        p += 1
-
-        if (p_test / p) < args.test_size:
-            test.write(line)
-            p_test += 1
-            continue
+    if in_text and line[0] not in "[{}|=# *&!-\n" and "[[" in line and len(line) > 80 and
+       random.randint(0, 100) <= 2 and p_test < args.test_size:
+        
+        test.write(line)
+        p_test += 1
+        continue
 
     sys.stdout.write(line)
 
