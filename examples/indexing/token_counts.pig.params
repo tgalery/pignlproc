@@ -1,6 +1,6 @@
 #Default params for running indexing using Pignlproc scripts
 # input: (uncompressed??) Wikipedia XML dump
-INPUT=/user/hadoop/%LANGwiki-latest-pages-articles.xml
+INPUT=%LANGwiki-latest-pages-articles.xml
 
 #Configuration
 MAX_SPAN_LENGTH=5000
@@ -16,13 +16,13 @@ LANG=%LANG
 ANALYZER_NAME=DutchAnalyzer
 
 # output directory in HDFS
-OUTPUT_DIR=/user/hadoop/%LANG/tokenCounts
+OUTPUT_DIR=%LANG/tokenCounts
 
 #Location of the Uri list for filtering
-#URI_LIST=/user/hadoop/input/milne_uri_list.txt
+#URI_LIST=input/milne_uri_list.txt
 
 # location of the stop word list file in HDFS
-STOPLIST_PATH=/user/hadoop/
+STOPLIST_PATH=./
 STOPLIST_NAME=stopwords.%LANG.list
 # local path to JAR containing UDFs
 
