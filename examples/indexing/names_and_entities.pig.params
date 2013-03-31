@@ -6,8 +6,8 @@ DEFAULT_PARALLEL=6
 LANG=%LANG
 LOCALE=%LOCALE
 
-INPUT=/user/hadoop/%LANGwiki-latest-pages-articles.xml
-OUTPUT=hdfs:///user/hadoop/%LANG/names_and_entities
+INPUT=%LANGwiki-latest-pages-articles.xml
+OUTPUT=%LANG/names_and_entities
 
 TEMPORARY_SF_LOCATION=hdfs:///user/hadoop/%LANG/sf_lookup
 
