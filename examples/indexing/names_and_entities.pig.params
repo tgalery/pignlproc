@@ -9,7 +9,7 @@ LOCALE=%LOCALE
 INPUT=/user/hadoop/%LANGwiki-latest-pages-articles.xml
 OUTPUT=/user/hadoop/%LANG/names_and_entities
 
-TEMPORARY_SF_LOCATION=hdfs:///user/hadoop/%LANG/sf_lookup
+TEMPORARY_SF_LOCATION=/user/hadoop/%LANG/sf_lookup
 
 
 # NERD STATS
