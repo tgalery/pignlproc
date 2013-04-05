@@ -19,7 +19,7 @@ ANALYZER_NAME=DutchAnalyzer
 OUTPUT_DIR=/user/hadoop/%LANG/tokenCounts
 
 #Location of the Uri list for filtering
-#URI_LIST=/user/hadoop/input/milne_uri_list.txt
+#URI_LIST=input/milne_uri_list.txt
 
 # location of the stop word list file in HDFS
 STOPLIST_PATH=/user/hadoop/
