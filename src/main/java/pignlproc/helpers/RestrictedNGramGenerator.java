@@ -62,7 +62,7 @@ public class RestrictedNGramGenerator extends EvalFunc<DataBag> {
 
         this.language = localeA[0];
 
-        if (new File("./tokenizer_model").length() > 0) {
+        if (new File("./tokenizer_model").length() > 10) {
             try {
                 this.tokenizer = new OpenNLPStringTokenizer(new TokenizerME(new TokenizerModel(new FileInputStream(new File("./tokenizer_model")))), new Stemmer());
             } catch (IOException ignored) {}
