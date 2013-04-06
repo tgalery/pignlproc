@@ -17,6 +17,7 @@ set io.sort.mb 1024
 SET pig.tmpfilecompression true;
 SET pig.tmpfilecompression.codec gz;
 
+SET default_parallel 20;
 
 -- Register the project jar to use the custom loaders and UDFs
 REGISTER $PIGNLPROC_JAR
