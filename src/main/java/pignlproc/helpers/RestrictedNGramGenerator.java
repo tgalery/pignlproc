@@ -18,6 +18,8 @@ package pignlproc.helpers;
  * limitations under the License.
  */
 
+import opennlp.tools.tokenize.TokenizerME;
+import opennlp.tools.tokenize.TokenizerModel;
 import opennlp.tools.util.Span;
 import org.apache.pig.EvalFunc;
 import org.apache.pig.FuncSpec;
@@ -27,11 +29,9 @@ import org.apache.pig.impl.logicalLayer.schema.Schema;
 import org.dbpedia.spotlight.db.model.StringTokenizer;
 import org.dbpedia.spotlight.db.model.Stemmer;
 import org.dbpedia.spotlight.db.tokenize.LanguageIndependentStringTokenizer;
+import org.dbpedia.spotlight.db.tokenize.OpenNLPStringTokenizer;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
 import java.util.*;
 
 
@@ -53,13 +53,24 @@ public class RestrictedNGramGenerator extends EvalFunc<DataBag> {
     private Set<String> surfaceFormLookup = new HashSet<String>();
     private String surfaceFormListFile;
 
+    private String language;
 
     public RestrictedNGramGenerator(int ngramSizeLimit, String surfaceFormListFile, String locale) {
         this.ngramSizeLimit = ngramSizeLimit;
         this.surfaceFormListFile = surfaceFormListFile;
-
         String[] localeA = locale.split("_");
-        this.tokenizer = new LanguageIndependentStringTokenizer(new Locale(localeA[0], localeA[1]), new Stemmer());
+
+        this.language = localeA[0];
+
+        if (new File("./tokenizer_model").exists()) {
+            try {
+                this.tokenizer = new OpenNLPStringTokenizer(new TokenizerME(new TokenizerModel(new FileInputStream(new File("./tokenizer_model")))), new Stemmer());
+            } catch (IOException ignored) {}
+        }
+
+        if (this.tokenizer == null)
+            this.tokenizer = new LanguageIndependentStringTokenizer(new Locale(localeA[0], localeA[1]), new Stemmer());
+
     }
 
     // Pig versions < 0.9 seem to only pass strings in constructor
@@ -70,6 +81,7 @@ public class RestrictedNGramGenerator extends EvalFunc<DataBag> {
     public List<String> getCacheFiles() {
         List<String> list = new ArrayList<String>(1);
         list.add(this.surfaceFormListFile + "#sfs");
+        list.add(this.language + ".tokenizer_model" + "#tokenizer");
         return list;
     }
 
@@ -89,7 +101,6 @@ public class RestrictedNGramGenerator extends EvalFunc<DataBag> {
                     fr.close();
                 }
             }
-
         }
 
         String text = (String)input.get(0);
