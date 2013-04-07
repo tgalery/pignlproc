@@ -31,8 +31,8 @@ for line in sys.stdin:
     if line.endswith("</text>\n"):
         in_text = False
 
-    if in_text and line[0] not in "[{}|=# *&!-\n" and "[[" in line and len(line) > 80 and
-       random.randint(0, 100) <= 2 and p_test < args.test_size:
+    if (in_text and line[0] not in "[{}|=# *&!-\n" and "[[" in line and len(line) > 80 and
+       random.randint(0, 100) <= 2 and p_test < args.test_size):
         
         test.write(line)
         p_test += 1
