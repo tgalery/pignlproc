@@ -128,7 +128,7 @@ DEFINE ngramGenerator pignlproc.helpers.RestrictedNGramGenerator('$MAX_NGRAM_LEN
 EXEC;
 
 -- Make Ngrams (filter to only include ngrams that are also surfaceforms)
-pageNgrams = FOREACH articles GENERATE FLATTEN( ngramGenerator(text) ) AS ngram, pageUrl;
+pageNgrams = FOREACH articles GENERATE FLATTEN( ngramGenerator(text) ) AS ngram, pageUrl PARALLEL 40;
 
 -- Double links: if surface form is annotated once,
 -- it's annotated every time for one page.
