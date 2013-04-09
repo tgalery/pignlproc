@@ -139,7 +139,7 @@ public class AnnotatingMarkupParser implements ITextConverter {
         m.put("tr", Pattern.compile("^(?:#YÖNLENDİRME|#REDIRECT) \\[\\[([^\\]]*)\\]\\]"));
         m.put("tt-latn", Pattern.compile("^(?:#yünältü|#REDIRECT) \\[\\[([^\\]]*)\\]\\]"));
         m.put("uk", Pattern.compile("^(?:#ПЕРЕНАПРАВЛЕННЯ|#ПЕРЕНАПР|#перенаправление|#перенапр|#REDIRECT) \\[\\[([^\\]]*)\\]\\]"));
-        m.put("vi", Pattern.compile("^(?:#đổi|#đổi|#REDIRECT) \\[\\[([^\\]]*)\\]\\]"));
+        m.put("vi", Pattern.compile("^(?:#đổi|#đổi|#REDIRECT) \\[\\[([^\\]]*)\\]\\]"));
         m.put("vro", Pattern.compile("^(?:#saadaq|#suuna|#REDIRECT) \\[\\[([^\\]]*)\\]\\]"));
         m.put("yi", Pattern.compile("^(?:#ווייטערפירן|#הפניה|#REDIRECT) \\[\\[([^\\]]*)\\]\\]"));
         m.put("ab", Pattern.compile("^(?:#перенаправление|#перенапр|#REDIRECT) \\[\\[([^\\]]*)\\]\\]"));
@@ -232,6 +232,8 @@ public class AnnotatingMarkupParser implements ITextConverter {
     public AnnotatingMarkupParser(String languageCode) {
         this.languageCode = languageCode;
         redirectPattern = REDIRECT_PATTERNS.get(languageCode);
+        if(redirectPattern==null)
+            redirectPattern = REDIRECT_PATTERNS.get("en");
         model = makeWikiModel(languageCode);
     }
 
