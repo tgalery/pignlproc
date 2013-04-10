@@ -80,7 +80,10 @@ public class RestrictedNGramGenerator extends EvalFunc<DataBag> {
 
     public List<String> getCacheFiles() {
         List<String> list = new ArrayList<String>(1);
-        list.add(this.surfaceFormListFile + "#sfs");
+
+        if (!this.surfaceFormListFile.equals(""))
+            list.add(this.surfaceFormListFile + "#sfs");
+
         list.add(this.language + ".tokenizer_model" + "#tokenizer");
         return list;
     }
@@ -88,7 +91,7 @@ public class RestrictedNGramGenerator extends EvalFunc<DataBag> {
     @Override
     public DataBag exec(Tuple input) throws IOException {
 
-        if (surfaceFormLookup.size() == 0) {
+        if (surfaceFormLookup.size() == 0 && !this.surfaceFormListFile.equals("")) {
             File folder = new File("./sfs");
             for (final File fileEntry: folder.listFiles()) {
                 if (fileEntry.getName().startsWith("part-")) {
@@ -124,7 +127,7 @@ public class RestrictedNGramGenerator extends EvalFunc<DataBag> {
             int endIdx = startIdx + size - 1;
             String ngram = text.substring(spans[startIdx].getStart(), spans[endIdx].getEnd());
 
-            if (surfaceFormLookup.contains(ngram)) {
+            if (this.surfaceFormListFile.equals("") || surfaceFormLookup.contains(ngram)) {
                 Tuple tuple = tupleFactory.newTuple(ngram);
                 output.add(tuple);
             }
