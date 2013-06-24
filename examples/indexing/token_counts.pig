@@ -34,7 +34,7 @@ DEFINE JsonCompressedStorage pignlproc.storage.JsonCompressedStorage();
 IMPORT '$MACROS_DIR/nerd_commons.pig';
 
 -- Get articles (IDs and pairs are not used (and not produced))
-_ids, articles, _pairs = read('$INPUT', '$LANG', $MIN_SURFACE_FORM_LENGTH);
+ids, articles, pairs = read('$INPUT', '$LANG', $MIN_SURFACE_FORM_LENGTH);
 
 -- Extract paragraph contexts of the links
 paragraphs = FOREACH articles GENERATE
