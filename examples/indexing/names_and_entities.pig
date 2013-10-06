@@ -31,6 +31,21 @@ IMPORT '$MACROS_DIR/nerd_commons.pig';
 -- Get surfaceForm-URI pairs
 ids, articles, pairs = read('$INPUT', '$LANG', $MIN_SURFACE_FORM_LENGTH);
 
+-- Before we count ngrams, write out all the surface forms to a temporary location
+-- This has to happen before the ngrams are produced, hence the EXEC statement
+allRawSurfaceForms = FOREACH pairs GENERATE
+  surfaceForm;
+  
+-- Add rows for all surfaceforms in lowercase.
+allLowerSurfaceForms = FOREACH allRawSurfaceForms GENERATE LOWER(surfaceForm);
+
+-- Join the original surface forms with their lowercased version
+allSurfaceForms = UNION allRawSurfaceForms, allLowerSurfaceForms;
+
+STORE allSurfaceForms INTO '$TEMPORARY_SF_LOCATION/surfaceForms';
+
+EXEC;
+
 -- Make ngrams
 --pageNgrams = diskIntensiveNgrams(articles, $MAX_NGRAM_LENGTH);
 pageNgrams = memoryIntensiveNgrams(articles, pairs, $MAX_NGRAM_LENGTH, '$TEMPORARY_SF_LOCATION', '$LOCALE');
