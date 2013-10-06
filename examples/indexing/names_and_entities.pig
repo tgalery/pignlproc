@@ -43,9 +43,15 @@ uriCounts, sfCounts, pairCounts, ngramCounts = count(pairs, pageNgrams);
 -- join some results
 --------------------
 
+-- Add dummy rows for all surfaceforms in lowercase. Their count is -1 to indicate they are dummy rows
+lowercasedSfCounts = FOREACH sfCounts GENERATE LOWER(surfaceForm), '-1';
+
+-- Join the original surface forms with their lowercased version
+sfCountsWithLowercase = UNION sfCounts, lowercasedSfCounts;
+
 -- Join annotated and unannotated SF counts:
 sfAndTotalCounts = FOREACH (JOIN
-  sfCounts    BY surfaceForm LEFT OUTER,
+  sfCountsWithLowercase   BY surfaceForm LEFT OUTER,
   ngramCounts BY ngram) GENERATE surfaceForm, sfCount, ngramCount;
 
 

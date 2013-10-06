@@ -134,8 +134,15 @@ DEFINE diskIntensiveNgrams(articles, MAX_NGRAM_LENGTH, LOCALE) RETURNS pageNgram
 DEFINE memoryIntensiveNgrams(articles, pairs, MAX_NGRAM_LENGTH, TEMPORARY_SF_LOCATION, LOCALE) RETURNS pageNgrams {
     -- create ngrams that also are surface forms in the pairs bag
 
-    allSurfaceForms = FOREACH pairs GENERATE
+    allRawSurfaceForms = FOREACH pairs GENERATE
       surfaceForm;
+
+    -- Add rows for all surfaceforms in lowercase.
+    allLowerSurfaceForms = FOREACH allRawSurfaceForms GENERATE LOWER(surfaceForm);
+
+      -- Join the original surface forms with their lowercased version
+    allSurfaceForms = UNION allRawSurfaceForms, allLowerSurfaceForms;
+
     STORE allSurfaceForms INTO '$TEMPORARY_SF_LOCATION/surfaceForms';
 
     DEFINE ngramGenerator pignlproc.helpers.RestrictedNGramGenerator('$MAX_NGRAM_LENGTH', '$TEMPORARY_SF_LOCATION/surfaceForms', '$LOCALE');
