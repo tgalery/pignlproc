@@ -1,4 +1,3 @@
-
 DEFINE read(WIKIPEDIA_DUMP, LANG, MIN_SURFACE_FORM_LENGTH) RETURNS ids, articles, pairs {
     -- parse Wikipedia into IDs, article texts and link pairs
 
@@ -132,22 +131,8 @@ DEFINE diskIntensiveNgrams(articles, MAX_NGRAM_LENGTH, LOCALE) RETURNS pageNgram
 };
 
 DEFINE memoryIntensiveNgrams(articles, pairs, MAX_NGRAM_LENGTH, TEMPORARY_SF_LOCATION, LOCALE) RETURNS pageNgrams {
-    -- create ngrams that also are surface forms in the pairs bag
-
-    allRawSurfaceForms = FOREACH pairs GENERATE
-      surfaceForm;
-
-    -- Add rows for all surfaceforms in lowercase.
-    allLowerSurfaceForms = FOREACH allRawSurfaceForms GENERATE LOWER(surfaceForm);
-
-      -- Join the original surface forms with their lowercased version
-    allSurfaceForms = UNION allRawSurfaceForms, allLowerSurfaceForms;
-
-    STORE allSurfaceForms INTO '$TEMPORARY_SF_LOCATION/surfaceForms';
 
     DEFINE ngramGenerator pignlproc.helpers.RestrictedNGramGenerator('$MAX_NGRAM_LENGTH', '$TEMPORARY_SF_LOCATION/surfaceForms', '$LOCALE');
-
-    EXEC;
 
     -- filter to only include ngrams that are also surface forms while generating ngrams
     $pageNgrams = FOREACH $articles GENERATE
