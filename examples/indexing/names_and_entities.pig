@@ -9,7 +9,7 @@
 
 SET job.name 'DBpedia Spotlight: Names and entities for $LANG'
 
-%default DEFAULT PARELLEL 20
+%default DEFAULT_PARELLEL 20
 SET default_parallel $DEFAULT_PARALLEL
 
 -- enable compression of intermediate results
