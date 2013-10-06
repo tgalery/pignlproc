@@ -59,7 +59,7 @@ uriCounts, sfCounts, pairCounts, ngramCounts = count(pairs, pageNgrams);
 --------------------
 
 -- Add dummy rows for all surfaceforms in lowercase. Their count is -1 to indicate they are dummy rows
-lowercasedSfCounts = FOREACH sfCounts GENERATE LOWER(surfaceForm), '-1';
+lowercasedSfCounts = FOREACH sfCounts GENERATE LOWER(surfaceForm) AS surfaceForm, -1 as sfCount;
 
 -- Join the original surface forms with their lowercased version
 sfCountsWithLowercase = UNION sfCounts, lowercasedSfCounts;
