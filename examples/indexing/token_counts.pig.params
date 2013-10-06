@@ -12,5 +12,8 @@ NUM_DOCS=3000000
 #Location of the Uri list for filtering
 #URI_LIST=input/milne_uri_list.txt
 
+#Required since the change to macros
+MIN_SURFACE_FORM_LENGTH = 2
+
 # number of reducers
 DEFAULT_PARALLEL=6
