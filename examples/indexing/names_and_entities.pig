@@ -33,7 +33,7 @@ ids, articles, pairs = read('$INPUT', '$LANG', $MIN_SURFACE_FORM_LENGTH);
 
 -- Make ngrams
 --pageNgrams = diskIntensiveNgrams(articles, $MAX_NGRAM_LENGTH);
-pageNgrams = memoryIntensiveNgrams(articles, pairs, $MAX_NGRAM_LENGTH, $TEMPORARY_SF_LOCATION, $LOCALE);
+pageNgrams = memoryIntensiveNgrams(articles, pairs, $MAX_NGRAM_LENGTH, '$TEMPORARY_SF_LOCATION', '$LOCALE');
 
 -- Count
 uriCounts, sfCounts, pairCounts, ngramCounts = count(pairs, pageNgrams);
