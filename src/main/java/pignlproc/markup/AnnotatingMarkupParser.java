@@ -44,6 +44,9 @@ public class AnnotatingMarkupParser implements ITextConverter {
     public static final String WIKILINK_TARGET_ATTR_KEY = "href";
 
     public static final String WIKIOBJECT_ATTR_KEY = "wikiobject";
+    
+    //Use a stricter recursion limit than the 256 default
+    public static final int RECURSION_LIMIT = 100;
 
     public static final Set<String> PARAGRAPH_TAGS = new HashSet<String>(
             Arrays.asList("p"));
@@ -297,7 +300,9 @@ public class AnnotatingMarkupParser implements ITextConverter {
         if (nodes != null && !nodes.isEmpty()) {
             try {
                 int level = model.incrementRecursionLevel();
-                if (level > Configuration.RENDERER_RECURSION_LIMIT) {
+                
+                //Use a stricter recursion limit than the 256 default:
+                if (level > RECURSION_LIMIT) {
                     countingBuffer.append("Error - recursion limit exceeded"
                             + " rendering tags in PlainTextConverter#nodesToText().");
                     return;
