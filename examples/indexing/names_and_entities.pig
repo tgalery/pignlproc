@@ -18,6 +18,13 @@ SET pig.tmpfilecompression.codec gz;
 
 SET io.sort.mb 1024
 
+-- Make Hadoop a bit more failure-resistant
+SET mapred.skip.mode.enabled = true;
+SET mapred.map.max.attempts = 20; 
+SET mapred.reduce.max.attempts = 20;
+SET mapred.skip.map.max.skip.records = 30000;
+SET mapred.skip.attempts.to.start.skipping = 1;
+
 REGISTER $PIGNLPROC_JAR
 DEFINE dbpediaEncode pignlproc.evaluation.DBpediaUriEncode('$LANG'); -- URI encoding
 DEFINE default pignlproc.helpers.SecondIfNotNullElseFirst(); -- default values
