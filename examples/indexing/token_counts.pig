@@ -22,11 +22,11 @@ SET pig.tmpfilecompression true
 SET pig.tmpfilecompression.codec gz
 
 -- Make Hadoop a bit more failure-resistant
-SET mapred.skip.mode.enabled = true;
-SET mapred.map.max.attempts = 20; 
-SET mapred.reduce.max.attempts = 20;
-SET mapred.skip.map.max.skip.records = 30000;
-SET mapred.skip.attempts.to.start.skipping = 1;
+SET mapred.skip.mode.enabled true;
+SET mapred.map.max.attempts 20; 
+SET mapred.reduce.max.attempts 20;
+SET mapred.skip.map.max.skip.records 30000;
+SET mapred.skip.attempts.to.start.skipping 1;
 
 -- Register the project jar to use the custom loaders and UDFs
 REGISTER $PIGNLPROC_JAR;
