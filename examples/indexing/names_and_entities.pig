@@ -20,7 +20,11 @@ SET io.sort.mb 1024
 
 -- Make Hadoop a bit more failure-resistant
 SET mapred.skip.mode.enabled true;
-SET mapred.map.max.attempts 20; 
+
+-- Stop trying after 8 attempts and accept a job if 10% of its mappers fail
+SET mapred.map.max.attempts 8;
+SET mapred.max.map.failures.percent 10;
+
 SET mapred.reduce.max.attempts 20;
 SET mapred.skip.map.max.skip.records 30000;
 SET mapred.skip.attempts.to.start.skipping 1;
