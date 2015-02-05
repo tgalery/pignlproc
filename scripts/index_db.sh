@@ -96,115 +96,33 @@ else
   echo "DBpedia dumps already present..."
 fi
 
+cd $BASE_WDIR
 
-# if [ "$DATA_ONLY" != "true" ]; then
-
-#   cd $BASE_WDIR
-
-#   if [ -d extraction-framework ]; then
-#       cd extraction-framework
-#       LOCAL=$(git rev-parse @)
-#       REMOTE=$(git rev-parse @{u})
-#       if [ $LOCAL = $REMOTE ]; then
-#         echo "extraction-framework up-to-date..."
-#       else
-#         echo "Updating extraction-framework..."
-#         git reset --hard HEAD
-#         git pull
-#         mvn -T 1C -q clean install
-#       fi
-#   else
-#       echo "Setting up extraction-framework..."
-#       git clone --depth 1 https://github.com/dbpedia/extraction-framework.git
-#       cd extraction-framework
-#       mvn -T 1C -q clean install
-#   fi
-
-#   cd $BASE_WDIR
-
-#   if [ -d scala-aho-corasick ]; then
-#       cd scala-aho-corasick
-#       LOCAL=$(git rev-parse @)
-#       REMOTE=$(git rev-parse @{u})
-#       if [ $LOCAL = $REMOTE ]; then
-#         echo "scala-aho-corasick up-to-date..."
-#       else
-#         echo "Updating scala-aho-corasick..."
-#         git reset --hard HEAD
-#         git pull
-#         mvn -T 1C -q clean install
-#       fi
-#   else
-#       echo "Setting up scala-aho-corasick..."
-#       git clone --depth 1 https://github.com/michellemay/scala-aho-corasick.git
-#       cd scala-aho-corasick
-#       mvn -T 1C -q clean install
-#   fi
-
-#   cd $BASE_WDIR
-
-#   if [ -d dbpedia-spotlight ]; then
-#       cd dbpedia-spotlight
-#       LOCAL=$(git rev-parse @)
-#       REMOTE=$(git rev-parse @{u})
-#       if [ $LOCAL = $REMOTE ]; then
-#         echo "dbpedia-spotlight up-to-date..."
-#       else
-#         echo "Updating dbpedia-spotlight..."
-#         git reset --hard HEAD
-#         git pull
-#         mvn -T 1C -q clean install
-#       fi
-#   else
-#       echo "Setting up dbpedia-spotlight..."
-#       git clone --depth 1 https://github.com/michellemay/dbpedia-spotlight.git
-#       cd dbpedia-spotlight
-#       mvn -T 1C -q clean install
-#   fi
-
-#   cd $BASE_WDIR
-
-#   if [ -d pig ]; then
-#       cd pig/pignlproc
-#       LOCAL=$(git rev-parse @)
-#       REMOTE=$(git rev-parse @{u})
-#       if [ $LOCAL = $REMOTE ]; then
-#         echo "PigNLProc up-to-date..."
-#       else
-#         echo "Updating PigNLProc..."
-#         git reset --hard HEAD
-#         git pull
-#         mvn -T 1C -q package -Dmaven.test.skip=true
-#       fi
-#   else
-#       echo "Setting up PigNLProc..."
-#       mkdir -p pig
-#       cd pig
-#       git clone --depth 1 https://github.com/michellemay/pignlproc.git
-#       cd pignlproc
-#       echo "Building PigNLProc..."
-#       mvn -T 1C -q package -Dmaven.test.skip=true
-#   fi 
-#fi
+if [ -d dbpedia-spotlight ]; then
+    cd dbpedia-spotlight
+    LOCAL=$(git rev-parse @)
+    REMOTE=$(git rev-parse @{u})
+    if [ $LOCAL = $REMOTE ]; then
+      echo "dbpedia-spotlight up-to-date..."
+    else
+      echo "Updating dbpedia-spotlight..."
+      git reset --hard HEAD
+      git pull
+      mvn -T 1C -q clean install
+    fi
+else
+    echo "Setting up dbpedia-spotlight..."
+    git clone --depth 1 https://github.com/dbpedia-spotlight/dbpedia-spotlight.git
+    cd dbpedia-spotlight
+    mvn -T 1C -q clean install
+fi
 
 # Stop processing if one step fails
-#set -e
+set -e
 
 wikifile="${LANGUAGE}wiki-latest-pages-articles.xml"
 
 if [ "$local_mode" == "true" ]; then
-
-  # if [ ! -e "$BASE_WDIR/pig/pig-0.12.1/" ]; then
-  #   #Install pig:
-  #   cd $BASE_WDIR/pig
-  #   wget http://apache.mirror.triple-it.nl/pig/pig-0.12.1/pig-0.12.1-src.tar.gz
-  #   tar xvzf pig-0.12.1-src.tar.gz
-  #   rm pig-0.12.1-src.tar.gz 
-  #   cd pig-0.12.1-src
-  #   ant jar
-  # fi
-
-  # export PATH=$BASE_WDIR/pig/pig-0.12.1-src/bin:$PATH
 
   #Get the dump
   if [ ! -f "$WDIR/${LANGUAGE}wiki-latest-pages-articles.xml" ]; then
@@ -240,9 +158,6 @@ fi
 echo "Moving stopwords into HDFS..."
 cd $BASE_DIR
 
-
-
-
 if [ "$local_mode" == "false" ]; then
 
   hadoop fs -put $STOPWORDS stopwords.$LANGUAGE.list || echo "stopwords already in HDFS"
@@ -271,7 +186,6 @@ fi
 
 #Adapt pig params:
 cd $BASE_DIR
-#cd $1/pig/pignlproc
 
 PIGNLPROC_JAR="$BASE_DIR/target/pignlproc-0.1.0-SNAPSHOT.jar"
 
@@ -349,7 +263,7 @@ fi
 
 #Create the model:
 cd $BASE_DIR
-#cd $1/dbpedia-spotlight
+cd $1/dbpedia-spotlight
 
 CREATE_MODEL="mvn -pl index exec:java -Dexec.mainClass=org.dbpedia.spotlight.db.CreateSpotlightModel -Dexec.args=\"$2 $WDIR $TARGET_DIR $opennlp $STOPWORDS $4Stemmer\";"
 echo "$CREATE_MODEL" > create_models.job.sh
