@@ -98,28 +98,6 @@ fi
 
 cd $BASE_WDIR
 
-if [ -d dbpedia-spotlight ]; then
-    cd dbpedia-spotlight
-    LOCAL=$(git rev-parse @)
-    REMOTE=$(git rev-parse @{u})
-    if [ $LOCAL = $REMOTE ]; then
-      echo "dbpedia-spotlight up-to-date..."
-    else
-      echo "Updating dbpedia-spotlight..."
-      git reset --hard HEAD
-      git pull
-      mvn -T 1C -q clean install
-    fi
-else
-    echo "Setting up dbpedia-spotlight..."
-    git clone --depth 1 https://github.com/dbpedia-spotlight/dbpedia-spotlight.git
-    cd dbpedia-spotlight
-    mvn -T 1C -q clean install
-fi
-
-# Stop processing if one step fails
-set -e
-
 wikifile="${LANGUAGE}wiki-latest-pages-articles.xml"
 
 if [ "$local_mode" == "true" ]; then
